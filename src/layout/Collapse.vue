@@ -12,7 +12,7 @@ import { useCollapseStore } from '@/stores/collapse';
 const store = useCollapseStore()
 // 获取状态
 const status = computed(() => {
-    return store.getCollapse
+    return store.collapse
 })
 // 点击图标
 const iconClick = () => {

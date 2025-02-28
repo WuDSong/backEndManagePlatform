@@ -1,5 +1,5 @@
 <template>
-    <el-breadcrumb class="bred" separator="/">
+    <el-breadcrumb class="bred" separator-icon="ArrowRight">
         <el-breadcrumb-item v-for="item in tabs">{{ item.meta.title }}</el-breadcrumb-item>
     </el-breadcrumb>
 </template>
@@ -8,7 +8,7 @@ import { onMounted, ref, type Ref, watch } from "vue";
 import { useRoute, type RouteLocationMatched } from "vue-router";
 //获取当前路由
 const route = useRoute();
-//定义面包屑导航数据
+//定义面包屑导航数据,RouteLocationMatched一条路由记录的规范化版本
 const tabs: Ref<RouteLocationMatched[]> = ref([]);
 //监听当前路由
 watch(

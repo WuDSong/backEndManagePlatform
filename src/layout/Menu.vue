@@ -1,12 +1,43 @@
 <template>
-    <el-menu default-active="/dashboard" class="el-menu-vertical-demo" :collapse="isCollapse" unique-opened router
+    <MenuLogo></MenuLogo>
+    <!--    页面加载时默认激活菜单的index                                 是否水平折叠       只保持一个子菜单的展开-->
+    <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" :collapse="isCollapse" unique-opened router
         @open="handleOpen" @close="handleClose" background-color="#304156">
-        <MenuItem :menuList="menuList"></MenuItem>
+        <MenuItem :menuList="menuList">
+        </MenuItem>
     </el-menu>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import MenuItem from './MenuItem.vue';
+import { useRoute } from 'vue-router'; //获取路由信息
+import MenuLogo from './MenuLogo.vue'
+import { useCollapseStore } from '@/stores/collapse';
+//获取路由信息
+const route = useRoute();
+//获取激活的父菜单，解决刷新页面后，父菜单折叠而导致子菜单不可见
+const activeIndex = computed(() => {
+    const { path } = route;
+    console.log("获取激活的父菜单" + path);
+    return path;
+})
+
+
+//实现导航折叠
+const isCollapse = computed(() => {
+    return useCollapseStore().collapse
+})
+//sub-menu展开
+const handleOpen = (key: string, keyPath: string[]) => {
+    console.log("sub-menu open");
+    console.log(key, keyPath)
+}
+//sub-menu关闭
+const handleClose = (key: string, keyPath: string[]) => {
+    console.log("sub-menu close");
+    console.log(key, keyPath)
+}
+
 //菜单数据 测试
 let menuList = reactive([
     {
@@ -62,55 +93,33 @@ let menuList = reactive([
         ],
     },
     {
-        path: "/goodsRoot",
+        path: "/communityManage",
         component: "Layout",
-        name: "goodsRoot",
+        name: "communityManage",
         meta: {
-            title: "商品管理",
+            title: "社区管理",
             icon: "Setting",
-            roles: ["sys:goodsRoot"],
+            roles: ["sys:communityManage"],
         },
         children: [
             {
-                path: "/goodsType",
-                component: "/goods/GoodsType",
-                name: "goodsType",
+                path: "/board",
+                component: "/communityManage/Board",
+                name: "board",
                 meta: {
-                    title: "商品分类",
+                    title: "版区管理",
                     icon: "UserFilled",
-                    roles: ["sys:goodsType"],
+                    roles: ["sys:board"],
                 },
             },
             {
-                path: "/goodsList",
-                component: "/goods/GoodsList",
-                name: "goodsList",
+                path: "/post",
+                component: "/communityManage/PostList",
+                name: "postList",
                 meta: {
-                    title: "商品信息",
+                    title: "帖子管理",
                     icon: "Wallet",
-                    roles: ["sys:goodsList"],
-                },
-            },
-        ],
-    },
-    {
-        path: "/order",
-        component: "Layout",
-        name: "order",
-        meta: {
-            title: "订单管理",
-            icon: "Setting",
-            roles: ["sys:order"],
-        },
-        children: [
-            {
-                path: "/orderList",
-                component: "/order/OrderList",
-                name: "orderList",
-                meta: {
-                    title: "订单信息",
-                    icon: "UserFilled",
-                    roles: ["sys:orderList"],
+                    roles: ["sys:postList"],
                 },
             },
         ],
@@ -182,16 +191,7 @@ let menuList = reactive([
         ],
     }
 ]);
-//折叠
-const isCollapse = ref(false)
-//展开
-const handleOpen = (key: string, keyPath: string[]) => {
-    console.log(key, keyPath)
-}
-//关闭
-const handleClose = (key: string, keyPath: string[]) => {
-    console.log(key, keyPath)
-}
+
 </script>
 <style lang="scss" scoped>
 .el-menu-vertical-demo:not(.el-menu--collapse) {

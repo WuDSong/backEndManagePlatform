@@ -3,7 +3,7 @@ import axios from "axios";
 import { ElMessage } from 'element-plus';
 //axios请求配置
 const config = {
-    baseURL: "http://localhost:10086",
+    baseURL: "http://localhost:12345",
     //允许携带cookie
     withCredentials: true,
     timeout: 10000
@@ -120,6 +120,8 @@ class Http {
     }
     /* GET 方法 */
     get<T = Result>(url: string, params?: object): Promise<T> {
+        // console.log("自定义的初始结构"+this.instance.get(url, { params }));
+        // console.log(this.instance.get(url, { params }));
         return this.instance.get(url, { params })
     }
     /* POST 方法 */

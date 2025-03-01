@@ -23,7 +23,6 @@ import { ElMessageBox } from 'element-plus'
 let props = defineProps({
     title: {
         type: String,
-        require: true,
         default: "弹框标题"
     },
     dialogVisible: {//是否显示弹窗
@@ -57,4 +56,13 @@ const handleClose = (done: () => void) => {
             // catch error
         })
 }
+
+
+//*********基本用法 */
+// <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="onConfirm"></SysDialog>
+//js:
+// import SysDialog from '@/components/SysDialog.vue';
+// import useDialog from '@/hooks/useDialog';
+// const { dialog, onClose, onConfirm, onShow } = useDialog()
 </script>
+

@@ -6,7 +6,7 @@ export default function useDialog() {
         title: "新增",
         visible: false,
         width: 500,
-        height: null
+        height:0
     });
     //弹框关闭
     const onClose = () => {

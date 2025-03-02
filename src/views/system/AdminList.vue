@@ -2,10 +2,10 @@
     <!-- <HttpTest></HttpTest> -->
     <!-- 搜索栏 -->
     <el-container style="height: 100%;" ref="box">
-        <el-main>
+        <el-main style="overflow: hidden;">
             <el-form :model="searchParam" :inline="true" size="default">
                 <el-form-item>
-                    <el-input v-model="searchParam.username" placeholder="请输入姓名">
+                    <el-input v-model="searchParam.username" placeholder="请输入姓名" :prefix-icon="Search">
                     </el-input>
                 </el-form-item>
                 <el-form-item>
@@ -15,7 +15,7 @@
                 </el-form-item>
             </el-form>
             <!-- 表格                    边框    是否为斑马纹-->
-            <el-table :data="tableList" border stripe max-height="400">
+            <el-table :data="tableList" border stripe :max-height="tableHeight">
                 <el-table-column prop="userid" label="UID" width="80" align="center" sortable></el-table-column>
                 <el-table-column prop="username" label="用户名"></el-table-column>
                 <el-table-column prop="role.roleName" label="角色">
@@ -40,8 +40,8 @@
                     <template #default="scope">
                         <el-tag v-if="scope.row.status == '1' && scope.row.role.roleKey == 'SUPER_ADMIN'"
                             type="info">启用</el-tag>
-                        <el-tag v-else-if="scope.row.status == '1'" type="success" effect="dark">启用</el-tag>
-                        <el-tag v-if="scope.row.status == '0'" type="danger" effect="dark">禁用</el-tag>
+                        <el-tag v-else-if="scope.row.status == '1'" type="success" effect="plain">启用</el-tag>
+                        <el-tag v-if="scope.row.status == '0'" type="danger" effect="plain">禁用</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center" min-width="300">
@@ -50,7 +50,7 @@
                         <!-- <el-button type="success" icon="Setting" size="default"
                         @click="assignBtn(scope.row)">分配菜单</el-button> -->
                         <el-button type="danger" icon="Delete" size="default"
-                            @click="deleteBtn(scope.row)">删除</el-button>
+                            @click="deleteBtn(scope.row.userid)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -107,21 +107,22 @@
     </SysDialog>
 </template>
 <script setup lang="ts">
-import HttpTest from '@/components/HttpTest.vue'
 import { type sysUserParam } from '@/api/user/UserModel'
-import { reactive, ref, onMounted } from 'vue'
-import { addSysUserApi, getSysUserListApi } from '@/api/user';
+import { ref, onMounted } from 'vue'
+import { addSysUserApi, delSysUserApi, getSysUserListApi, updateSysUserApi } from '@/api/user';
 import type { SySUser } from '@/api/user/UserModel';
 import { getRoleListApi } from "@/api/role/index"
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
-import { ElMessage, ElNotification, type FormInstance } from 'element-plus';
-import {type Role} from "@/api/role/RoleModel"
+import { ElMessage, ElMessageBox, ElNotification, type FormInstance } from 'element-plus';
+import { type Role } from "@/api/role/RoleModel"
+import { nextTick } from 'vue';
+import { Calendar, Search } from '@element-plus/icons-vue'
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<sysUserParam>({
     username: "",
-    pageSize: 5,
+    pageSize: 7,
     curPage: 1,
     total: 10
 })
@@ -151,7 +152,7 @@ let sizeChange = () => {
     getSysUserList()
 }
 //对后台用户操作相关
-let sysUser = ref({//数据
+let sysUser = ref<SySUser>({//数据
     userid: '',
     username: '',
     password: '',
@@ -188,6 +189,20 @@ let addBtn = () => {
     onShow()// dialog.visible=true //显示弹窗
     getRoleList()
 }
+let editBtn = (user: SySUser) => {
+    mode.value = 1
+    dialog.width = 700
+    dialog.title = '修改用户信息'
+    dialog.visible = true
+    // addFormRef.value?.resetFields()//清空表单
+    //当数据更新了，在dom中渲染后，自动执行该函数
+    nextTick(() => {
+        Object.assign(sysUser.value, user) //把user-->sysuser
+    })
+    // console.log(sysUser.value);
+    addFormRef.value?.resetFields()//清空表单
+    getRoleList()
+}
 //点击提交
 let commit = async () => {
     //表单验证
@@ -199,9 +214,7 @@ let commit = async () => {
                 sysUser.value.userid = ''//uid自动生成，不需要填
                 res = await addSysUserApi(sysUser.value);
             } else {
-                // res = await editApi(addModel);
-                console.log("TODO");
-
+                res = await updateSysUserApi(sysUser.value)
             }
             if (res && res.code == 200) {
                 //信息提示
@@ -216,15 +229,30 @@ let commit = async () => {
     });
 }
 
-let editBtn = (user: SySUser) => {
-    console.log(user);
-}
 
-let deleteBtn = (user: SySUser) => {
-
+let deleteBtn = (userid: string) => {
+    ElMessageBox.confirm('确定删除该用户数据吗?', '系统提示',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }).then(async () => {
+            let res = await delSysUserApi(userid)
+            if (res.code == 200) {
+                ElMessage.success(res.msg)
+                getSysUserList()
+            }
+        }).catch(() => {
+            ElMessage.info("删除已取消！")
+        })
 }
 let box = ref(null)//用来挂载元素
+let tableHeight = ref(0)
 onMounted(() => {
+    console.log(window.innerHeight);
+    tableHeight.value = window.innerHeight - 60 - 20 * 2 - 32 - 20 * 2 - 50
+    console.log(tableHeight.value);
+    //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding) - (el-footer) -(el-main的padding) -(搜索表单)
     getSysUserList()
 })
 

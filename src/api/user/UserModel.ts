@@ -1,3 +1,5 @@
+import type { Role } from "../role/RoleModel"
+
 //定义用户的数据类型，用于添加，所以不必和数据库一样
 export type SySUser = { //默认不是管理员，启用状态
     userid?: string,  //添加新用户时可以不提供，修改时提供，其他带？同样
@@ -7,7 +9,8 @@ export type SySUser = { //默认不是管理员，启用状态
     phone: string,
     rid?:string,
     email:string,
-    status?:string
+    status?:string,
+    role?:Role
 }
 
 //Admin用户查找

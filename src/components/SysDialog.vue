@@ -20,7 +20,7 @@
 import { ref, defineProps, defineEmits } from 'vue'
 import { ElMessageBox } from 'element-plus'
 //父组件传值,只读
-let props = defineProps({
+defineProps({
     title: {
         type: String,
         default: "弹框标题"
@@ -58,8 +58,8 @@ const handleClose = (done: () => void) => {
 }
 
 
-//*********基本用法 */
-// <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="onConfirm"></SysDialog>
+//---------------基本用法 */
+// <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" :width="dialog.width" @onClose="onClose" @onConfirm="onConfirm"></SysDialog>
 //js:
 // import SysDialog from '@/components/SysDialog.vue';
 // import useDialog from '@/hooks/useDialog';

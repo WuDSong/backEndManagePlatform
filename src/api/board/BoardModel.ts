@@ -2,7 +2,7 @@
 export type Board = { 
     boardId?: string,  
     name: string,
-    icon: string,
+    icon?: string,
     description: string,
     sortOrder?: string
 }

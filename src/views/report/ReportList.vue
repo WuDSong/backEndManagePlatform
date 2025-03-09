@@ -1,8 +1,8 @@
-<script setup lang="ts">
-    
-</script>
 <template>
-    <div>这里是举报管理</div>
+    <UploadSingleImage></UploadSingleImage>
 </template>
-<style>
-</style>
+
+<script setup lang="ts">
+import UploadSingleImage from '@/components/UploadImage.vue'
+
+</script>

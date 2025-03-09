@@ -83,7 +83,7 @@ import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
 import { getBoardListApi, addBoardApi, updateBoardApi, delBoardApi } from "@/api/board/index"
 import { type Board, type BoardParam } from "@/api/board/BoardModel"
-import UploadSingleImage from '@/components/UploadSingleImage.vue'
+import UploadSingleImage from '@/components/UploadImage.vue'
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<BoardParam>({
@@ -149,28 +149,28 @@ let editBtn = (row: Board) => {
 }
 //点击提交
 let commit = async () => {
-    //表单验证
-    // addFormRef.value?.validate(async (valid) => {
-    //     if (valid) { //验证通过
-    //         // console.log(addModel);
-    //         let res = null
-    //         if (mode.value == 0) {
-    //             board.value.userid = ''//uid自动生成，不需要填
-    //             res = await addSysUserApi(board.value);
-    //         } else {
-    //             res = await updateSysUserApi(board.value)
-    //         }
-    //         if (res && res.code == 200) {
-    //             //信息提示
-    //             ElMessage.success(res.msg)
-    //             getBoardList()
-    //             //关闭弹框
-    //             dialog.visible = false;
-    //         }
-    //     } else {
-    //         ElMessage.error("验证未通过！重新填写信息！！！")
-    //     }
-    // });
+    // 表单验证
+    addFormRef.value?.validate(async (valid) => {
+        if (valid) { //验证通过
+            // console.log(addModel);
+            let res = null
+            if (mode.value == 0) {
+                board.value.boardId = ''//uid自动生成，不需要填
+                res = await addBoardApi(board.value);
+            } else {
+                res = await updateBoardApi(board.value)
+            }
+            if (res && res.code == 200) {
+                //信息提示
+                ElMessage.success(res.msg)
+                getBoardList()
+                //关闭弹框
+                dialog.visible = false;
+            }
+        } else {
+            ElMessage.error("验证未通过！重新填写信息！！！")
+        }
+    });
 }
 
 

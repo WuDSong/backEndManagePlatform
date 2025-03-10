@@ -1,6 +1,6 @@
 在这段代码中，从 `element-plus` 库中导入了几个类型和一个函数，下面为你详细解释这些导入项的用途：
 
-### 1. `genFileId`
+## 1. `genFileId`
 - **功能**：`genFileId` 是一个函数，它的作用是生成一个唯一的文件 ID。在文件上传组件中，每个上传的文件通常需要一个唯一标识符来区分不同的文件，方便后续的操作，比如文件的删除、状态跟踪等。
 - **使用场景**：当你在处理文件上传时，可能需要为每个文件分配一个唯一的 ID 以便于管理。例如，在自定义文件上传逻辑或者扩展 `element-plus` 的文件上传组件功能时，就可以使用 `genFileId` 来生成文件 ID。
 - **示例代码**：
@@ -11,7 +11,7 @@ const fileId = genFileId();
 console.log('生成的文件 ID:', fileId);
 ```
 
-### 2. `UploadFile`
+## 2. `UploadFile`
 - **类型定义**：`UploadFile` 是一个类型，它定义了 `element-plus` 文件上传组件中文件对象的结构。这个类型包含了文件的各种属性，如文件名、文件大小、文件状态、文件 URL 等。
 - **使用场景**：当你需要处理文件上传组件中的文件对象时，使用 `UploadFile` 类型可以确保代码的类型安全。例如，在文件上传的回调函数中，接收的文件参数可以指定为 `UploadFile` 类型。
 - **示例代码**：
@@ -25,7 +25,7 @@ function handleFileUpload(file: UploadFile) {
 }
 ```
 
-### 3. `UploadInstance`
+## 3. `UploadInstance`
 - **类型定义**：`UploadInstance` 是一个类型，它代表 `element-plus` 文件上传组件的实例。通过这个实例，你可以访问和操作文件上传组件的各种方法和属性，例如手动触发上传、获取文件列表等。
 - **使用场景**：当你需要对文件上传组件进行一些自定义操作时，可以通过 `UploadInstance` 类型来引用组件实例。例如，在某些情况下，你可能需要在用户点击某个按钮时手动触发文件上传。
 - **示例代码**：
@@ -52,7 +52,7 @@ const manualUpload = () => {
 </script>
 ```
 
-### 4. `UploadProps`
+## 4. `UploadProps`
 - **类型定义**：`UploadProps` 是一个类型，它定义了 `element-plus` 文件上传组件的所有属性。这些属性包括上传的 URL、请求方法、文件限制、是否自动上传等。
 - **使用场景**：当你需要动态配置文件上传组件的属性时，可以使用 `UploadProps` 类型来确保传入的属性符合组件的要求。例如，在某些情况下，你可能需要根据用户的选择动态设置上传的 URL。
 - **示例代码**：
@@ -67,7 +67,7 @@ const uploadProps: UploadProps = {
 };
 ```
 
-### 5. `UploadRawFile`
+## 5. `UploadRawFile`
 - **类型定义**：`UploadRawFile` 是一个类型，它代表原始的文件对象，也就是用户选择上传的文件。这个类型通常是浏览器原生的 `File` 对象的封装，包含了文件的基本信息，如文件名、文件大小、文件类型等。
 - **使用场景**：当你需要直接处理用户选择的原始文件时，可以使用 `UploadRawFile` 类型。例如，在文件上传前对文件进行一些验证或者预处理。
 - **示例代码**：
@@ -83,7 +83,7 @@ function validateFile(file: UploadRawFile) {
 }
 ```
 
-### 6.`UploadUserFile`
+## 6.`UploadUserFile`
 - **类型定义**
 UploadUserFile 是 element-plus 中用于表示用户上传文件的类型。在文件上传场景下，它描述了用户选择的文件对象的结构，包含了文件的一些基本信息以及上传过程中的状态信息。
 - **使用场景**
@@ -114,7 +114,7 @@ const handleFileChange = (file: UploadUserFile, fileList: UploadUserFile[]) => {
 ```
 
 
-### 7.`UploadUserFile`、`UploadFile` 和 `UploadRawFile`区别
+## 7.`UploadUserFile`、`UploadFile` 和 `UploadRawFile`区别
 
 #### (1) `UploadRawFile`
 - **定义**：它代表的是原始的文件对象，本质上就是浏览器原生的 `File` 对象，包含了文件的基本元数据，如文件名、文件大小、文件类型、最后修改时间等，是最基础的文件信息载体。
@@ -222,11 +222,11 @@ type UploadUserFile = Omit<UploadFile, 'status' | 'uid'> &
 type UploadStatus = 'ready' | 'uploading' | 'success' | 'fail'
 ```
 
-### 8.UploadInstance
+## 8.UploadInstance
 
 在 `ElementPlus` 中，`UploadInstance` 代表文件上传组件 `el-upload` 的实例。通过该实例，你可以调用一些方法来控制文件上传组件的行为，以下是 `UploadInstance` 中一些常用的方法及使用示例：
 
-#### (1). `submit()`
+### (1). `submit()`
 - **功能**：手动触发文件上传。当 `auto-upload` 属性设置为 `false` 时，可使用此方法手动提交文件进行上传。
 - **示例代码**
 ```vue
@@ -255,7 +255,23 @@ const handleSubmit = () => {
 </script>
 ```
 
-#### (2)`clearFiles()`
+在 Element Plus 的 Upload 组件中，**`UploadInstance.submit()` 方法默认只会上传文件列表中处于「未上传状态」的文件**，具体行为如下：
+
+#### 📌 核心行为解析
+
+| 文件状态             | 是否会被 `submit()` 上传 | 典型场景           |
+| :------------------- | :----------------------- | :----------------- |
+| `ready` (准备就绪)   | ✅ 会                     | 新添加未上传的文件 |
+| `uploading` (上传中) | ❌ 不会（跳过）           | 正在上传中的文件   |
+| `success` (已成功)   | ❌ 不会                   | 已成功上传的文件   |
+| `fail` (已失败)      | ✅ 会（重新上传）         | 之前上传失败的文件 |
+
+
+
+
+
+### (2)`clearFiles()`
+
 - **功能**：清空所有已选择的文件。当你需要重置文件上传列表时，可以调用此方法。
 - **示例代码**
 ```vue
@@ -283,7 +299,7 @@ const handleClear = () => {
 </script>
 ```
 
-#### (3)`abort(file?: UploadFile)`
+### (3)`abort(file?: UploadFile)`
 - **功能**：取消上传。如果传入 `file` 参数，则取消指定文件的上传；若不传入参数，则取消所有正在上传的文件。
 - **示例代码**
 ```vue
@@ -316,7 +332,7 @@ const handleAbort = () => {
 </script>
 ```
 
-#### (4)`getFileList()`
+### (4)`getFileList()`
 - **功能**：获取当前的文件列表。可以用于获取已选择文件的信息，如文件名、文件状态等。
 - **示例代码**
 ```vue
@@ -345,6 +361,13 @@ const handleGetFileList = () => {
 </script>
 ```
 
-#### 注意事项
+### (5)handleStart()
+
+​		它会把文件的状态重置为准备上传状态，通常是 `ready` 状态，并且可能会做一些初始化操作，像创建上传请求等。
+
+
+
+### 注意事项
+
 - 在调用 `UploadInstance` 的方法时，需要确保 `uploadRef` 已经正确引用到 `el-upload` 组件实例，可通过 `if (uploadRef.value)` 进行判断。
 - 不同版本的 `ElementPlus` 可能对 `UploadInstance` 的方法有细微差异，使用时请参考对应版本的官方文档。 

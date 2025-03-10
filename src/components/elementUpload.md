@@ -182,6 +182,22 @@ UploadUserFile (用户配置的展示信息)
 
 **`UploadUserFile` 是用户通过 `file-list` 属性传入的，用于展示已上传文件的列表**
 
+
+
+**UploadRawFile属性**
+
+uid ,标识符
+
+lastModified ，最后一次修改的时间戳
+
+lastModifiedDate ，最后一次修改的时间，是一个对象Date,提供了许多方法，
+
+name ，名字
+
+size ，大小，单位:字节B
+
+type , 类型
+
 ```tsx
 //`Omit<T, K>` 用于从类型 `T` 中排除指定的属性 `K`，返回一个新的类型。例如，`Omit<{a: number, b: string}, 'a'>` 会得到 `{b: string}`。总结：用于剔除不需要的必填属性。
 //Pick<UploadFile, 'status' | 'uid'>: 从 UploadFile 中仅选取 status 和 uid 属性，Partial<...>: 将这些选取的属性变成可选属性（即加上 ? 修饰符）。

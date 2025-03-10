@@ -1,7 +1,6 @@
 <template>
     <el-upload :action="'http://localhost:12345/api/upload/uploadImage'" list-type="picture-card" :auto-upload="false"
-        v-model:file-list="fileList" ref="uploadRef"  :limit="2" 
-        :on-change="handleChange" :on-exceed="handleExceed">
+        v-model:file-list="fileList" ref="uploadRef" :limit="2" :on-change="handleChange" :on-exceed="handleExceed">
         <!-- :on-change="uploadFile" on-change文件状态改变时的钩子，添加文件、上传成功和上传失败时都会被调用 -->
         <el-icon>
             <Plus />
@@ -37,11 +36,7 @@
     height: 100px;" :src="dialogImageUrl" fit="cover"
         :preview-src-list="previewSrcList" /> -->
     <el-button @click="handleClick">show image preview</el-button>
-    <div>文件列表：{{ fileList }}</div>
-    <h2>原文件</h2>
-    <div v-for="item in fileList">
-        {{ item.raw?.name }}
-    </div>
+    <!-- <div>文件列表：{{ fileList }}</div> -->
 </template>
 
 <script lang="ts" setup>
@@ -60,6 +55,7 @@ const dialogImageUrl = ref('')
 const disabled = ref(false) //是否允许下载，删除
 const uploadRef = ref<UploadInstance>()//上传组件
 const fileList = ref<UploadUserFile[]>([]) //用的是UploadUserFile,展示用户上传成功的结果
+
 //预览
 let previewSrcList = ref<string[]>([]) //el-image的预览列表
 const imageRef = ref<ImageInstance>()
@@ -81,22 +77,44 @@ const handlePictureCardPreview = (file: UploadFile) => {
     imageRef.value!.showPreview()
 }
 
-const handleClick = () => { //预览测试事件
-    // imageRef.value!.showPreview()
-    console.log('组件内部文件列表:', uploadRef.value);
+// 下载
+const handleDownload = async (file: UploadFile) => {
+    try {
+        console.log('下载');
+        console.log(file);
+        const url = new URL(file.url!);
+        const filename = url.pathname.split('/').pop() || 'download.jpg';
+
+        // 使用 fetch 获取图片的 Blob 对象
+        const response = await fetch(file.url!);
+        const blob = await response.blob();
+
+        // 创建临时 URL
+        const objectUrl = URL.createObjectURL(blob);
+
+        // 创建 a 标签
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = filename;
+        a.click();
+
+        // 释放临时 URL
+        URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+        console.error('下载失败:', error);
+        ElMessage.error('下载失败，请稍后重试');
+    }
 }
-//下载
-const handleDownload = (file: UploadFile) => {
-    console.log(file)
-}
+
 //删除
 const handleRemove = (file: UploadFile) => {
     console.log(file)
-    fileList.value.map((item,index)=>{
-        if(item.uid&&item.uid===file.uid)
-            fileList.value.splice(index,1)
+    fileList.value.map((item, index) => {
+        if (item.uid && item.uid === file.uid)
+            fileList.value.splice(index, 1)
     })
 }
+
 //超出，清除所有图片
 const handleExceed: UploadProps['onExceed'] = (files) => {
     uploadRef.value!.clearFiles()
@@ -105,10 +123,25 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
     uploadRef.value!.handleStart(file)
 }
 //上传
-const handleChange: UploadProps['onChange'] = async (file: UploadFile, fileList: UploadFile[]) => {
+const handleChange: UploadProps['onChange'] = async (file, uploadFiles) => {
+    // console.dir(uploadFiles);
     // console.log("上传前的file和fileList");
     // console.log(file);
     // console.log(fileList)
+    //检查图片
+    const typeArr = ["image/png", "image/gif", "image/jpeg", "image/jpg"];
+    const isImg = typeArr.indexOf(file.raw!.type) !== -1
+    const isMore10M = (file.size!) / 1024 / 1024 < 10
+    if (!isImg) {
+        ElMessage.warning("只能上传图片类型!")
+        // uploadRef.value?.clearFiles() 
+        file.status = 'fail'
+    }
+    if (!isMore10M) {
+        ElMessage.warning("图片大小不能超过10M!")
+        // uploadRef.value?.clearFiles()
+        file.status = 'fail'
+    }
     if (file.status === 'ready') {
         try {
             // 创建表单数据对象，组装上传的数据
@@ -120,12 +153,30 @@ const handleChange: UploadProps['onChange'] = async (file: UploadFile, fileList:
                 file.status = 'success'
                 // console.log("上传图片结果：");
                 // console.log(res)
-                file.url = "http://localhost:12345"+res.data
+                file.url = "http://localhost:12345" + res.data
                 ElMessage.success('文件上传成功')
                 // console.log("现在上传后的file和fileList")
-                // console.log(file);
-                // console.log(fileList);
-                //修改file会影响到fileList
+                // console.log(file)
+                // console.log(fileList)
+
+                // 修改file会影响到fileList,但是...为什么页面显示刚刚上传的url还是本地url?
+
+                // 20250310
+                // 注意：fileList 是 UploadUserFile类型 ，而file: UploadFile ,
+                // 可能导致响应式更新出现问题，从而使得 fileList 里的文件 url 没有及时更新。
+                // 尽管 file 和 fileList 中的对应元素在内存里指向同一个对象，但因为类型不同，Vue 的响应式系统也许无法正确追踪到变化
+
+                // 手动更新 fileList 中的对应元素
+                // const index = fileList.value.findIndex(item => item.uid === file.uid);
+                // if (index!== -1) {
+                //     fileList.value[index].url = file.url;
+                // }
+
+                //作用域问题?
+                // let index=fileList.value.findIndex(item => item.uid === file.uid)
+                // if(index!=-1)
+                //     fileList.value[index].url=file.url
+
             } else {
                 file.status = 'fail'
                 ElMessage.error('文件上传失败');
@@ -134,23 +185,34 @@ const handleChange: UploadProps['onChange'] = async (file: UploadFile, fileList:
             file.status = 'fail'
             console.error('文件上传出错:', error);
             ElMessage.error('文件上传出错，请稍后重试');
-        }finally{
-            checkFailedFiles()
+        } finally {
+            delFailedFiles()
+            // console.log('list 相关文件');
+            // console.log(fileList)
         }
     }
-};
-const checkSuccessFiles=()=>{
-    fileList.value.map((item)=>{
-        if(item.status&&item.status==='success')
-            console.log(item.name+"上传成功");
+    delFailedFiles()
+}
+
+const checkSuccessFiles = () => {
+    fileList.value.map((item) => {
+        if (item.status && item.status === 'success')
+            console.log(item.name + "上传成功");
     })
 }
 //删除上传失败的文件
-const checkFailedFiles = ()=>{
-    fileList.value.map((item,index)=>{
-        if(item.status&&item.status==='fail')
-            fileList.value.splice(index,1)
+const delFailedFiles = () => {
+    fileList.value.map((item, index) => {
+        if (item.status && item.status === 'fail')
+            fileList.value.splice(index, 1)
     })
+    // console.log('删除上传失败的文件')
+    // console.log(fileList);  
 }
 
+const handleClick = () => { //预览测试事件
+    // imageRef.value!.showPreview()
+    console.log('组件内部文件列表:', uploadRef.value)
+    console.log(fileList)
+}
 </script>

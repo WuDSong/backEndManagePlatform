@@ -163,7 +163,39 @@ const router = createRouter({
           },
         },
       ],
-    }
+    },
+    {
+      path: "/test",
+      component: Layout,
+      name: "test",
+      meta: {
+          title: "实验室",
+          icon: "Setting",
+          roles: ["sys:report"],
+      },
+      children: [
+          {
+              path: "/t1",
+              component: ()=>import('@/views/test/t1.vue'),
+              name: "t1",
+              meta: {
+                  title: "上传测试",
+                  icon: "Postcard",
+                  roles: ["sys:reportList"],
+              },
+          },
+          {
+            path: "/t2",
+            component: ()=>import('@/views/test/t2.vue'),
+            name: "t2",
+            meta: {
+                title: "t2",
+                icon: "Postcard",
+                roles: ["sys:reportList"],
+            },
+        },
+      ],
+  }
   ],
 })
 

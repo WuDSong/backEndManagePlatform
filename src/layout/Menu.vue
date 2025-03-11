@@ -189,6 +189,38 @@ let menuList = reactive([
                 },
             },
         ],
+    },
+    {
+        path: "/test",
+        component: "Layout",
+        name: "test",
+        meta: {
+            title: "实验室",
+            icon: "Setting",
+            roles: ["sys:report"],
+        },
+        children: [
+            {
+                path: "/t1",
+                component: "test/t1",
+                name: "t1",
+                meta: {
+                    title: "上传测试",
+                    icon: "Postcard",
+                    roles: ["sys:reportList"],
+                },
+            },
+            {
+                path: "/t2",
+                component: "test/t2",
+                name: "t2",
+                meta: {
+                    title: "模板",
+                    icon: "Postcard",
+                    roles: ["sys:reportList"],
+                },
+            },
+        ],
     }
 ]);
 

@@ -16,10 +16,9 @@
             <el-table :data="tableList" border stripe :max-height="tableHeight">
                 <el-table-column prop="boardId" label="BoardID" width="120" align="center" sortable></el-table-column>
                 <el-table-column prop="name" label="版区" align="center"></el-table-column>
-                <el-table-column prop="icon" label="图标" width="75">
+                <el-table-column prop="icon" label="图标">
                     <template #default="scope">
-                        <!-- <div style="color: #686868">{{ scope.row.icon }}</div> -->
-                        <el-image :src="scope.row.icon"> </el-image> 
+                        <div style="color: #686868">{{ scope.row.icon }}</div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="description" label="描述" min-width="300"></el-table-column>
@@ -28,7 +27,7 @@
                     <template #default="scope">
                         <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)">编辑</el-button>
                         <el-button type="danger" icon="Delete" size="default"
-                            @click="deleteBtn(scope.row.boardId)">删除</el-button>
+                            @click="deleteBtn(scope.row.userid)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -46,46 +45,31 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
-            <el-form :model="board" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
-            label-position="right" style="padding: 10px 20px;">
+            <el-form :model="board" ref="addFormRef" :rules="rules" :inline="true" label-width="80px"
+                label-position="right">
                 <el-form-item prop="name" label="版区名字">
-                    <el-input v-model="board.name" style="width: 150px;" placeholder="喵喵喵"></el-input>
-                </el-form-item>
-                <el-form-item prop="sortOrder" label="排序">
-                    <el-input-number v-model="board.sortOrder" :min="0" :max="10"  style="width: 100px;"/>
-                </el-form-item>
-                <el-form-item prop="description" label="版区描述">
-                    <el-input v-model="board.description" type="textarea" :rows="3" placeholder="描述一下吧q(≧▽≦q)"style="width:360px;"></el-input>
-                </el-form-item>
-                <el-form-item prop="description" label="版区图标">
-                    <!-- <el-upload class="upload-demo" drag action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" multiple>
-                        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                        <div class="el-upload__text">
-                            Drop file here or <em>click to upload</em>
-                        </div>
-                        <template #tip>
-                            <div class="el-upload__tip">
-                                files with a size less than 10MB
-                            </div>
-                        </template>
-                    </el-upload> -->
-                    <UploadSingleImage :uploadParam="uploadParam"></UploadSingleImage>
+                    <el-input v-model="board.name"></el-input>
                 </el-form-item>
             </el-form>
         </template>
     </SysDialog>
 </template>
 <script setup lang="ts">
+import { type sysUserParam } from '@/api/user/UserModel'
 import { ref, onMounted } from 'vue'
+import { addSysUserApi, delSysUserApi, getSysUserListApi, updateSysUserApi } from '@/api/user';
+import type { SySUser } from '@/api/user/UserModel';
+
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
 import { ElMessage, ElMessageBox, ElNotification, type FormInstance } from 'element-plus';
+
 import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
-import { getBoardListApi, addBoardApi, updateBoardApi, delBoardApi } from "@/api/board/index"
+
+import { getBoardListApi } from "@/api/board/index"
 import { type Board, type BoardParam } from "@/api/board/BoardModel"
-import UploadSingleImage from '@/components/UploadImage.vue'
-import type { uploadImageParameter } from '@/api/img/uploadImageModel';
+
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<BoardParam>({
@@ -128,23 +112,18 @@ let board = ref<Board>({//数据
 
 //弹窗相关--------------------------------------------------------
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
-let uploadParam:uploadImageParameter={ //上传图片的模式
-    imgCount: 1,
-    moreLimitMode: 1,
-    size: 10,
-    fileList: []
-}
+
 //表单ref属性
 const addFormRef = ref<FormInstance>()
 
 //点击新建，显示弹窗
 let addBtn = () => {
     mode.value = 0
-    dialog.width = 550
+    dialog.width = 700
     dialog.visible = true
     addFormRef.value?.resetFields()//清空表单
 }
-
+//点击编辑
 let editBtn = (row: Board) => {
     mode.value = 1
     dialog.width = 700
@@ -157,47 +136,46 @@ let editBtn = (row: Board) => {
 }
 //点击提交
 let commit = async () => {
-    // 表单验证
-    addFormRef.value?.validate(async (valid) => {
-        if (valid) { //验证通过
-            // console.log(addModel);
-            let res = null
-            if (mode.value == 0) {
-                board.value.boardId = ''    //uid自动生成，不需要填
-                board.value.icon=uploadParam.fileList[0].url    
-                res = await addBoardApi(board.value);
-            } else {
-                res = await updateBoardApi(board.value)
-            }
-            if (res && res.code == 200) {
-                //信息提示
-                ElMessage.success(res.msg)
-                getBoardList()
-                //关闭弹框
-                dialog.visible = false;
-            }
-        } else {
-            ElMessage.error("验证未通过！重新填写信息！！！")
-        }
-    });
+    //表单验证
+    // addFormRef.value?.validate(async (valid) => {
+    //     if (valid) { //验证通过
+    //         // console.log(addModel);
+    //         let res = null
+    //         if (mode.value == 0) {
+    //             board.value.userid = ''//uid自动生成，不需要填
+    //             res = await addSysUserApi(board.value);
+    //         } else {
+    //             res = await updateSysUserApi(board.value)
+    //         }
+    //         if (res && res.code == 200) {
+    //             //信息提示
+    //             ElMessage.success(res.msg)
+    //             getBoardList()
+    //             //关闭弹框
+    //             dialog.visible = false;
+    //         }
+    //     } else {
+    //         ElMessage.error("验证未通过！重新填写信息！！！")
+    //     }
+    // });
 }
 
 
 let deleteBtn = (id: string) => {
-    ElMessageBox.confirm('确定删除该用户数据吗?', '系统提示',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }).then(async () => {
-            let res = await delBoardApi(id)
-            if (res.code == 200) {
-                ElMessage.success(res.msg)
-                getBoardList()
-            }
-        }).catch(() => {
-            ElMessage.info("删除已取消！")
-        })
+    // ElMessageBox.confirm('确定删除该用户数据吗?', '系统提示',
+    //     {
+    //         confirmButtonText: '确定',
+    //         cancelButtonText: '取消',
+    //         type: 'warning',
+    //     }).then(async () => {
+    //         let res = await delSysUserApi(userid)
+    //         if (res.code == 200) {
+    //             ElMessage.success(res.msg)
+    //             getBoardList()
+    //         }
+    //     }).catch(() => {
+    //         ElMessage.info("删除已取消！")
+    //     })
 }
 let box = ref(null)//用来挂载元素
 let tableHeight = ref(0)

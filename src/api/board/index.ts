@@ -20,3 +20,8 @@ export const updateBoardApi = (param: Board) => {
 export const delBoardApi = (param: string) => {
     return http.delete("/api/board/" + param)
 }
+
+//isOccupied
+export const isOccupiedBoardApi =(param:string)=>{
+    return http.get("/api/board/isOccupied/"+param)
+}

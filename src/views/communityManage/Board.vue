@@ -19,7 +19,7 @@
                 <el-table-column prop="icon" label="图标" width="75">
                     <template #default="scope">
                         <!-- <div style="color: #686868">{{ scope.row.icon }}</div> -->
-                        <el-image :src="scope.row.icon"> </el-image> 
+                        <el-image :src="scope.row.icon"> </el-image>
                     </template>
                 </el-table-column>
                 <el-table-column prop="description" label="描述" min-width="300"></el-table-column>
@@ -47,17 +47,18 @@
         :width="dialog.width">
         <template #content>
             <el-form :model="board" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
-            label-position="right" style="padding: 10px 20px;">
+                label-position="right" style="padding: 10px 20px;">
                 <el-form-item prop="name" label="版区名字">
                     <el-input v-model="board.name" style="width: 150px;" placeholder="喵喵喵"></el-input>
                 </el-form-item>
                 <el-form-item prop="sortOrder" label="排序">
-                    <el-input-number v-model="board.sortOrder" :min="0" :max="10"  style="width: 100px;"/>
+                    <el-input-number v-model="board.sortOrder" :min="0" :max="10" style="width: 100px;" />
                 </el-form-item>
                 <el-form-item prop="description" label="版区描述">
-                    <el-input v-model="board.description" type="textarea" :rows="3" placeholder="描述一下吧q(≧▽≦q)"style="width:360px;"></el-input>
+                    <el-input v-model="board.description" type="textarea" :rows="3" placeholder="描述一下吧喵q(≧▽≦q)~"
+                        style="width:360px;"></el-input>
                 </el-form-item>
-                <el-form-item prop="description" label="版区图标">
+                <el-form-item prop="icon" label="版区图标">
                     <!-- <el-upload class="upload-demo" drag action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" multiple>
                         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                         <div class="el-upload__text">
@@ -68,8 +69,14 @@
                                 files with a size less than 10MB
                             </div>
                         </template>
-                    </el-upload> -->
-                    <UploadSingleImage :uploadParam="uploadParam"></UploadSingleImage>
+    </el-upload> -->
+                    <UploadSingleImage :uploadParam="uploadParam" @change="fn">
+                        <template #extraTip>
+                            <div v-if="uploadParam.fileList.length === 0" style="color: red"><el-icon>
+                                    <WarnTriangleFilled />
+                                </el-icon>不上传，则使用默认图标</div>
+                        </template>
+                    </UploadSingleImage>
                 </el-form-item>
             </el-form>
         </template>
@@ -79,13 +86,14 @@
 import { ref, onMounted } from 'vue'
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
-import { ElMessage, ElMessageBox, ElNotification, type FormInstance } from 'element-plus';
+import { ElMessage, ElMessageBox, ElNotification, type FormInstance, type UploadUserFile } from 'element-plus';
 import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
-import { getBoardListApi, addBoardApi, updateBoardApi, delBoardApi } from "@/api/board/index"
+import { getBoardListApi, addBoardApi, updateBoardApi, delBoardApi, isOccupiedBoardApi } from "@/api/board/index"
 import { type Board, type BoardParam } from "@/api/board/BoardModel"
 import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
+import { icons } from '@element-plus/icons-vue/global';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<BoardParam>({
@@ -123,17 +131,17 @@ let board = ref<Board>({//数据
     name: '',
     icon: '',
     description: '',
-    sortOrder: ''
+    sortOrder: 0
 })
 
 //弹窗相关--------------------------------------------------------
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
-let uploadParam:uploadImageParameter={ //上传图片的模式
+let uploadParam = ref<uploadImageParameter>({ //上传图片的模式
     imgCount: 1,
     moreLimitMode: 1,
     size: 10,
-    fileList: []
-}
+    fileList: []  //UploadUserFile类型
+})
 //表单ref属性
 const addFormRef = ref<FormInstance>()
 
@@ -143,6 +151,8 @@ let addBtn = () => {
     dialog.width = 550
     dialog.visible = true
     addFormRef.value?.resetFields()//清空表单
+    //清空上传信息
+    uploadParam.value.fileList = []
 }
 
 let editBtn = (row: Board) => {
@@ -154,6 +164,14 @@ let editBtn = (row: Board) => {
         Object.assign(board.value, row)
     })
     addFormRef.value?.resetFields()//清空表单
+    uploadParam.value.fileList = []
+    //图片封装UploadUserFile
+    let uploadedUserFile: UploadUserFile = {
+        name: "",
+        url: row.icon
+    }
+    uploadParam.value.fileList.push(uploadedUserFile)
+
 }
 //点击提交
 let commit = async () => {
@@ -162,9 +180,11 @@ let commit = async () => {
         if (valid) { //验证通过
             // console.log(addModel);
             let res = null
+            if (uploadParam.value.fileList.length == 0)
+                board.value.icon = ''
+            else board.value.icon = uploadParam.value.fileList[0].url
             if (mode.value == 0) {
                 board.value.boardId = ''    //uid自动生成，不需要填
-                board.value.icon=uploadParam.fileList[0].url    
                 res = await addBoardApi(board.value);
             } else {
                 res = await updateBoardApi(board.value)
@@ -184,7 +204,7 @@ let commit = async () => {
 
 
 let deleteBtn = (id: string) => {
-    ElMessageBox.confirm('确定删除该用户数据吗?', '系统提示',
+    ElMessageBox.confirm('确定删除该版区吗?', '系统提示',
         {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
@@ -199,6 +219,7 @@ let deleteBtn = (id: string) => {
             ElMessage.info("删除已取消！")
         })
 }
+
 let box = ref(null)//用来挂载元素
 let tableHeight = ref(0)
 onMounted(() => {
@@ -208,41 +229,67 @@ onMounted(() => {
     //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding) - (el-footer) -(el-main的padding) -(搜索表单)
     getBoardList()
 })
-
-
+// 合法性
+let isOccupied = async (rule: any, value: any, callback: any) => {
+    //value值就是输入的值
+    if (mode.value === 1&&value===board.value.name) {
+        //如果现在是修改模式的话则需要检验的是修改后的值
+        callback()
+        return
+    }
+    //如果是第一次(mode==0)添加则需要直接验证
+    let res = await isOccupiedBoardApi(value)
+    if (res && res.code == 200 && res.data)
+        callback(new Error("版区名已被占用啦~"))
+    callback()
+}
 let rules = {
-    // 用户名验证规则
-    username: [
-        { required: true, message: '用户名不能为空', trigger: 'blur' }, // 必填项，失去焦点时触发验证
-        { min: 3, max: 10, message: '用户名长度在 3 到 10 个字符之间', trigger: 'blur' } // 长度限制
+    name: [
+        { required: true, message: '版区名称不能为空', trigger: 'blur' },
+        { min: 1, max: 20, message: '名称长度在1到20个字符之间', trigger: 'blur' },
+        { message: '版区名已被占用喵~', trigger: 'blur', validator: isOccupied }
     ],
-    // 密码验证规则
-    password: [
-        { required: true, message: '密码不能为空', trigger: 'blur' }, // 必填项，失去焦点时触发验证
-        { min: 6, max: 16, message: '密码长度在 6 到 16 个字符之间', trigger: 'blur' } // 长度限制
+    sortOrder: [
+        {
+            type: 'number',
+            required: true,
+            message: '排序值不能为空',
+            trigger: 'blur'
+        },
+        {
+            type: 'number',
+            min: 0,
+            max: 10,
+            message: '排序值需在0-10之间',
+            trigger: ['blur', 'change']
+        }
     ],
-    // 性别验证规则
-    sex: [
-        { required: true, message: '请选择性别', trigger: 'change' } // 必填项，选择时触发验证
-    ],
-    // 电话验证规则
-    phone: [
-        { required: true, message: '电话不能为空', trigger: 'blur' }, // 必填项，失去焦点时触发验证
-        { pattern: /^1[3456789]\d{9}$/, message: '请输入有效的手机号码', trigger: 'blur' } // 正则表达式验证手机号码格式
-    ],
-    // 邮箱验证规则
-    email: [
-        { required: true, message: '邮箱不能为空', trigger: 'blur' }, // 必填项，失去焦点时触发验证
-        { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' } // 使用 Element UI 内置的邮箱格式验证
-    ],
-    // 状态验证规则
-    // status: [
-    //     { required: true, message: '请选择状态', trigger: 'change' } // 必填项，选择时触发验证
-    // ],
-    // 角色验证规则
-    rid: [
-        { required: true, message: '请选择角色', trigger: 'change' } // 必填项，选择时触发验证
+    description: [
+        { required: true, message: '版区描述不能为空', trigger: 'blur' },
+        { max: 100, message: '描述内容不能超过100个字符', trigger: 'blur' }
     ]
+}
+
+
+//**------------------------以下是未使用或者是已被抛弃的函数----------------------------------------------
+let fn = () => {
+    console.log("测试 子组件是否有触发change事件");
+}
+// 修改验证规则部分
+const validateIcon = (rule: any, value: any, callback: any) => {
+    if (uploadParam.value.fileList.length === 0) {
+        // 这里用通知代替错误提示，避免阻塞表单提交
+        ElNotification({
+            title: '提示',
+            message: '版区图片为空，将使用默认图片',
+            type: 'info',
+            duration: 3000
+        })
+        // 设置默认图片URL 
+        // board.value.icon = '/default-icon.png'
+        //【20250314】数据库里面已经有默认图片
+    }
+    callback() // 始终通过验证
 }
 </script>
 <style scoped>

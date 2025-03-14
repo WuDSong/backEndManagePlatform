@@ -15,5 +15,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  //下面是我自己加的   ---2025/2/27
 })

@@ -20,3 +20,8 @@ export const updateSysUserApi = (param: SySUser) => {
 export const delSysUserApi = (param: string) => {
     return http.delete("/api/sysUser/" + param)
 }
+
+//判断用户名是否被占用
+export const isOccupiedSysUserApi =(param:string)=>{
+    return http.get("/api/sysUser/isOccupied/"+param)
+}

@@ -2,10 +2,12 @@
 import SysDialog from "@/components/SysDialog.vue"
 import { ref } from "vue";
 import  useDialog  from "@/hooks/useDialog"; 
-
+import {systemInfoStore} from "@/stores/system"
 let outSideNum=ref(0)
 //获取弹框属性和方法，在页面调用
 const { dialog, onClose, onConfirm, onShow } = useDialog();
+
+const systemInfo=systemInfoStore()
 </script>
 <template>
     <div>这里是仪表板</div>
@@ -17,7 +19,13 @@ const { dialog, onClose, onConfirm, onShow } = useDialog();
             </div>
         </template>
     </SysDialog>
-    <div>{{ outSideNum }}</div>
+    <h2>System Info</h2>
+    <div>
+        {{ systemInfo }}
+    </div>
+    <div>
+        {{ systemInfoStore() }}
+    </div>
 </template>
 <style>
 </style>

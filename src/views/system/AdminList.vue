@@ -13,6 +13,7 @@
                     <el-button icon="Close" type="danger" plain @click="resetBtn">重置</el-button>
                     <el-button type="primary" icon="Plus" @click="addBtn">新增</el-button>
                 </el-form-item>
+                <el-form-item>tip:超级管理员一旦启用,将无法对其进行任何操作</el-form-item>
             </el-form>
             <!-- 表格                    边框    是否为斑马纹-->
             <el-table :data="tableList" border stripe :max-height="tableHeight">
@@ -46,10 +47,10 @@
                 </el-table-column>
                 <el-table-column label="操作" align="center" min-width="300">
                     <template #default="scope">
-                        <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)">编辑</el-button>
-                        <!-- <el-button type="success" icon="Setting" size="default"
-                        @click="assignBtn(scope.row)">分配菜单</el-button> -->
+                        <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)"
+                            :disabled="scope.row.status == '1' && scope.row.role.roleKey == 'SUPER_ADMIN'">编辑</el-button>
                         <el-button type="danger" icon="Delete" size="default"
+                            :disabled="scope.row.status == '1' && scope.row.role.roleKey == 'SUPER_ADMIN'"
                             @click="deleteBtn(scope.row.userid)">删除</el-button>
                     </template>
                 </el-table-column>
@@ -77,10 +78,10 @@
                     <el-input v-model="sysUser.password"></el-input>
                 </el-form-item>
                 <el-form-item prop="sex" label="性别">
-                    <el-radio-group v-model="sysUser.sex">
-                        <el-radio :value="'0'">保密</el-radio>
-                        <el-radio :value="'1'">男</el-radio>
-                        <el-radio :value="'2'">女</el-radio>
+                    <el-radio-group v-model="sysUser.sex" id="sex">
+                        <el-radio :value="'0'" id="sex0">保密</el-radio>
+                        <el-radio :value="'1'" id="sex1">男</el-radio>
+                        <el-radio :value="'2'" id="sex2">女</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <br>
@@ -91,9 +92,9 @@
                     <el-input v-model="sysUser.email"></el-input>
                 </el-form-item>
                 <el-form-item prop="status" label="状态">
-                    <el-radio-group v-model="sysUser.status">
-                        <el-radio :value="'1'">启用</el-radio>
-                        <el-radio :value="'0'">禁用</el-radio>
+                    <el-radio-group v-model="sysUser.status" id="status">
+                        <el-radio :value="'1'" id="active">启用</el-radio>
+                        <el-radio :value="'0'" id="banned">禁用</el-radio>
                     </el-radio-group>
                 </el-form-item><br>
                 <el-form-item prop="rid" label="角色">
@@ -109,7 +110,7 @@
 <script setup lang="ts">
 import { type sysUserParam } from '@/api/user/UserModel'
 import { ref, onMounted } from 'vue'
-import { addSysUserApi, delSysUserApi, getSysUserListApi, updateSysUserApi } from '@/api/user';
+import { addSysUserApi, delSysUserApi, getSysUserListApi, isOccupiedSysUserApi, updateSysUserApi } from '@/api/user';
 import type { SySUser } from '@/api/user/UserModel';
 import { getRoleListApi } from "@/api/role/index"
 import SysDialog from '@/components/SysDialog.vue';
@@ -256,12 +257,26 @@ onMounted(() => {
     getSysUserList()
 })
 
+let isOccupied = async (rule: any, value: any, callback: any) => {
+    //value值就是输入的值
+    if (mode.value === 1&&value===sysUser.value.username) {
+        //如果现在是修改模式的话则需要检验的是修改后的值
+        callback()
+        return
+    }
+    let res =await isOccupiedSysUserApi(value)
+    if (res&&res.code == 200&&res.data) 
+        callback(new Error("用户名已被占用啦~"))
+    
+    callback()
+}
 
 let rules = {
     // 用户名验证规则
     username: [
         { required: true, message: '用户名不能为空', trigger: 'blur' }, // 必填项，失去焦点时触发验证
-        { min: 3, max: 10, message: '用户名长度在 3 到 10 个字符之间', trigger: 'blur' } // 长度限制
+        { min: 3, max: 10, message: '用户名长度在 3 到 10 个字符之间', trigger: 'blur' }, // 长度限制
+        { message: '用户名已被占用', trigger: 'blur', validator: isOccupied }
     ],
     // 密码验证规则
     password: [

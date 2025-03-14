@@ -1,7 +1,7 @@
 <template>
     <el-upload :action="'http://localhost:12345/api/upload/uploadImage'" list-type="picture-card" :auto-upload="false"
         v-model:file-list="uploadParam.fileList" ref="uploadRef" :limit="uploadParam.imgCount" :on-change="handleChange"
-        :on-exceed="handleExceed" :before-upload="beforeImgUpload" >
+        :on-exceed="handleExceed" :before-upload="beforeImgUpload">
         <!-- :on-change="uploadFile" on-change文件状态改变时的钩子，添加文件、上传成功和上传失败时都会被调用 -->
         <el-icon>
             <Plus />
@@ -9,10 +9,10 @@
         <template #file="{ file }">
             <div>
                 <!-- <span>{{ file.percentage }}</span> -->
-                <el-image ref="imageRef" :src="file.url" fit="contain" :lazy="true"
-                    :preview-src-list="previewSrcList" style="width: 100%;
+                <el-image ref="imageRef" :src="file.url" fit="contain" :lazy="true" :preview-src-list="previewSrcList"
+                    style="width: 100%;
                     height: 100%;"></el-image>
-                
+
                 <span class="el-upload-list__item-actions">
                     <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
                         <el-icon><zoom-in /></el-icon>
@@ -31,8 +31,12 @@
             </div>
         </template>
         <template #tip>
+            <div class="extraTip">
+                <slot name="extraTip"></slot>
+            </div>
             <div class="el-upload__tip">Image files with a size less than {{ props.uploadParam.size }}MB. </div>
             <div class="el-upload__tip">You can have up to {{ props.uploadParam.imgCount }} images. </div>
+
         </template>
     </el-upload>
     <!-- <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" :width="dialog.width" @onClose="onClose" @onConfirm="onConfirm">
@@ -52,7 +56,7 @@
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
-import { ref, onMounted, reactive, type PropType } from 'vue'
+import { ref, watch, type PropType } from 'vue'
 import { Delete, Download, Plus, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage, genFileId, type UploadFile, type UploadInstance, type UploadProps, type UploadRawFile } from 'element-plus'
 import type { ImageInstance, UploadUserFile } from 'element-plus'
@@ -66,8 +70,16 @@ let props = defineProps({
     }
 })
 //定义事件
-const emit = defineEmits(["refresh"])
-
+const emit = defineEmits(["refresh", "change"])
+watch(
+    () => props.uploadParam.fileList,
+    (newVal, oldVal) => {
+        // console.log('fileList变化，新值:', newVal);
+        // console.log('fileList变化，旧值:', oldVal);
+        emit('change', '有被修改成功啦~')
+    },
+    { deep: true }
+);
 
 const dialogImageUrl = ref('')
 // const dialogVisible = ref(false)
@@ -138,7 +150,7 @@ const handleRemove = (file: UploadFile) => {
         if (item.uid && item.uid === file.uid)
             props.uploadParam.fileList.splice(index, 1)
     })
-    ElMessage.success("删除成功")
+    ElMessage.success("图片移除成功")
 }
 
 // 超出上传图片的数量
@@ -185,7 +197,6 @@ const handleExceed: UploadProps['onExceed'] = async (files) => {
 let beforeImgUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 }
-
 
 // 上传
 const handleChange: UploadProps['onChange'] = async (file, uploadFiles) => {
@@ -254,6 +265,7 @@ const handleChange: UploadProps['onChange'] = async (file, uploadFiles) => {
             delFailedFiles()
             // console.log('list 相关文件');
             // console.log(fileList)
+
         }
     }
     delFailedFiles()
@@ -286,3 +298,8 @@ const handleClick = () => { //预览测试事件
 }
 const uploadProgress = ref(0)
 </script>
+<style scoped>
+.extraTip{
+    
+}
+</style>

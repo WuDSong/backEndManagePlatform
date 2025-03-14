@@ -4,7 +4,7 @@ export type Board = {
     name: string,
     icon?: string,
     description: string,
-    sortOrder?: string
+    sortOrder?: number
 }
 
 //board查找

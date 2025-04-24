@@ -96,6 +96,16 @@ const router = createRouter({
             roles: ["sys:postList"],
           },
         },
+        {
+          path: "/topic",
+          component: () => import("@/views/communityManage/Topic.vue"),
+          name: "topicList",
+          meta: {
+            title: "话题管理",
+            icon: "Wallet",
+            roles: ["sys:topicList"],
+          },
+        },
       ],
     },
     {

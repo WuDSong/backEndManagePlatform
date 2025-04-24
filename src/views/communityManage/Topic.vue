@@ -14,21 +14,44 @@
             </el-form>
             <!-- 表格                    边框    是否为斑马纹-->
             <el-table :data="tableList" border stripe :max-height="tableHeight">
-                <el-table-column prop="boardId" label="BoardID" width="120" align="center" sortable></el-table-column>
-                <el-table-column prop="name" label="版区" align="center"></el-table-column>
-                <el-table-column prop="icon" label="图标" width="75">
+                <el-table-column prop="topicId" label="TopicId" width="100" align="center" sortable></el-table-column>
+                <el-table-column prop="topicName" label="话题" align="center"></el-table-column>
+                <el-table-column prop="topicIcon" label="图标" width="75">
                     <template #default="scope">
-                        <!-- <div style="color: #686868">{{ scope.row.icon }}</div> -->
-                        <el-image :src="scope.row.icon"> </el-image>
+                        <el-image :src="scope.row.topicIcon"> </el-image>
                     </template>
                 </el-table-column>
-                <el-table-column prop="description" label="描述" min-width="300"></el-table-column>
-                <el-table-column prop="sortOrder" label="序号" width="60" align="center"></el-table-column>
-                <el-table-column label="操作" align="center" min-width="200">
+                <el-table-column prop="topicDescription" label="描述" min-width="200">
+                    <!-- show-overflow-tooltip 会只显示一行，而我想要显示的是不止一行 ，此外tooltip也是一行-->
+                    <template #default="scope">
+                        <el-text line-clamp="2">
+                            {{ scope.row.topicDescription }}
+                        </el-text>
+                        <!-- el-text 居然可以满足 自动显示tooltip,虽然不好看但是可以用 -->
+                    </template>
+                </el-table-column>
+                <!-- <el-table-column prop="createdAt" label="创建时间"  align="center"></el-table-column> -->
+                <el-table-column prop="updatedAt" label="最近修改" align="center">
+                    <template #default="scope">
+                        <div v-if="scope.row.updatedAt == null" type="success" effect="plain" style="padding: 0 10px;">
+                            <el-divider />
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="usageCount" label="热度/参与人数" align="center" width="140" sortable>
+                    <template #default="scope">
+                        {{ formatNumber(scope.row.usageCount) }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center" width="200">
                     <template #default="scope">
                         <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)">编辑</el-button>
-                        <el-button type="danger" icon="Delete" size="default"
-                            @click="deleteBtn(scope.row.boardId)">删除</el-button>
+                        <el-tooltip v-if="scope.row.usageCount != 0" placement="top">
+                            <template #content> 该话题已经被引用啦~~~<br />只有不被引用，才可以删除！ </template>
+                            <el-button type="danger" icon="Delete" size="default" @click="deleteBtn(scope.row.topicId)"
+                            :disabled="scope.row.usageCount != 0">删除</el-button>
+                        </el-tooltip>
+                        <el-button v-else type="danger" icon="Delete" size="default" @click="deleteBtn(scope.row.topicId)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -46,30 +69,16 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
-            <el-form :model="board" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
+            <el-form :model="topic" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
                 label-position="right" style="padding: 10px 20px;">
-                <el-form-item prop="name" label="版区名字">
-                    <el-input v-model="board.name" style="width: 150px;" placeholder="喵喵喵"></el-input>
+                <el-form-item prop="topicName" label="话题">
+                    <el-input v-model="topic.topicName" style="width: 150px;" placeholder="喵喵喵"></el-input>
                 </el-form-item>
-                <el-form-item prop="sortOrder" label="排序">
-                    <el-input-number v-model="board.sortOrder" :min="0" :max="10" style="width: 100px;" />
-                </el-form-item>
-                <el-form-item prop="description" label="版区描述" show-overflow-tooltip>
-                    <el-input v-model="board.description" type="textarea" :rows="3" placeholder="描述一下吧喵q(≧▽≦q)~"
+                <el-form-item prop="topicDescription" label="描述">
+                    <el-input v-model="topic.topicDescription" type="textarea" :rows="3" placeholder="描述一下吧喵q(≧▽≦q)~"
                         style="width:360px;"></el-input>
                 </el-form-item>
-                <el-form-item prop="icon" label="版区图标">
-                    <!-- <el-upload class="upload-demo" drag action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" multiple>
-                        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                        <div class="el-upload__text">
-                            Drop file here or <em>click to upload</em>
-                        </div>
-                        <template #tip>
-                            <div class="el-upload__tip">
-                                files with a size less than 10MB
-                            </div>
-                        </template>
-    </el-upload> -->
+                <el-form-item prop="topicIcon" label="图标">
                     <UploadSingleImage :uploadParam="uploadParam" @change="fn">
                         <template #extraTip>
                             <div v-if="uploadParam.fileList.length === 0" style="color: red"><el-icon>
@@ -89,50 +98,57 @@ import useDialog from '@/hooks/useDialog';
 import { ElMessage, ElMessageBox, ElNotification, type FormInstance, type UploadUserFile } from 'element-plus';
 import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
-import { getBoardListApi, addBoardApi, updateBoardApi, delBoardApi, isOccupiedBoardApi } from "@/api/board/index"
-import { type Board, type BoardParam } from "@/api/board/BoardModel"
+import { getTopicListApi, addTopicApi, updateTopicApi, delTopicApi, isOccupiedTopicApi } from "@/api/topic/index"
+import type { Topic, TopicParam } from "@/api/topic/TopicModel"
 import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
+import { formatNumber } from "@/utils/number"
 import { icons } from '@element-plus/icons-vue/global';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
-const searchParam = ref<BoardParam>({
+const searchParam = ref<TopicParam>({
     name: "",
     pageSize: 7,
     curPage: 1,
     total: 10
 })
 let tableList = ref([])//表格数据
-let getBoardList = async () => {
-    let res = await getBoardListApi(searchParam.value)
+let getTopicList = async () => {
+    let res = await getTopicListApi(searchParam.value)
     if (res && res.code == 200) {
         tableList.value = res.data.records
         searchParam.value.total = res.data.total;
     }
 }
 //搜索相关
-let searchBtn = () => { getBoardList() }
+let searchBtn = () => { getTopicList() }
 let resetBtn = () => {
     searchParam.value.name = ""
-    getBoardList()
+    getTopicList()
 }
 //页面变动相关
 let curChange = () => {
     console.log("当前页面：" + searchParam.value.curPage);
-    getBoardList()
+    getTopicList()
 }
 let sizeChange = () => {
     console.log("当前页大小：" + searchParam.value.pageSize);
-    getBoardList()
+    getTopicList()
 }
 //修改对象
-let board = ref<Board>({//数据
-    boardId: '',
-    name: '',
-    icon: '',
-    description: '',
-    sortOrder: 0
+// 每次添加新话题时是否正确地重置了这个对象？上次使用了topicIcon，这次是否topicIcon有值
+// 当字段值为空字符串时，MyBatis-Plus会将其作为有效值插入，覆盖数据库默认值。需确保未传递的字段保持为 null 而非空字符串。
+let topic = ref<Topic>({//数据
+    topicId: '',
+    topicName: '',
+    topicIcon: '', //有了这一行则无法使用默认图标，除非增加服务器端的检测
+    topicDescription: ''
 })
+/**调用了`addFormRef.value?.resetFields()`，但Element UI的`resetFields`方法会将表单字段重置为初始值，而初始的`topic`对象
+ * 没有`topicIcon`属性，所以理论上会移除该属性。此外，`uploadParam.value.fileList = []`清空了上传列表，但在提交时，如果未选择图片，
+ * `topicIcon`不会被赋值，保持为`undefined`。但需要注意，如果在编辑时修改了`topicIcon`，然后再次新增话题时，`topic`对象可能仍然
+ * 保留`topicIcon`属性，因为Vue的响应式对象一旦添加了属性，会被保留。因此，在`addBtn`中，仅仅重置表单可能不够，
+ * 需要彻底重置`topic.value`为一个新对象，确保没有残留属性。 */
 
 //弹窗相关--------------------------------------------------------
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
@@ -155,20 +171,20 @@ let addBtn = () => {
     uploadParam.value.fileList = []
 }
 
-let editBtn = (row: Board) => {
+let editBtn = (row: Topic) => {
     mode.value = 1
     dialog.width = 700
     dialog.title = '修改版区信息'
     dialog.visible = true
     nextTick(() => {
-        Object.assign(board.value, row)
+        Object.assign(topic.value, row)
     })
     addFormRef.value?.resetFields()//清空表单
     uploadParam.value.fileList = []
     //图片封装UploadUserFile
     let uploadedUserFile: UploadUserFile = {
         name: "",
-        url: row.icon
+        url: row.topicIcon
     }
     uploadParam.value.fileList.push(uploadedUserFile)
 
@@ -180,19 +196,22 @@ let commit = async () => {
         if (valid) { //验证通过
             // console.log(addModel);
             let res = null
-            if (uploadParam.value.fileList.length == 0)
-                board.value.icon = ''
-            else board.value.icon = uploadParam.value.fileList[0].url
+            if (uploadParam.value.fileList.length == 0) {
+                topic.value.topicIcon = ''  //有了这一行则无法使用默认图标，除非增加服务器端检测
+                console.log("没有选择任何图标,使用默认图标");
+            }
+            else topic.value.topicIcon = uploadParam.value.fileList[0].url
             if (mode.value == 0) {
-                board.value.boardId = ''    //uid自动生成，不需要填
-                res = await addBoardApi(board.value);
+                topic.value.topicId = ''    //uid自动生成，不需要填
+                console.log(topic.value.topicIcon);
+                res = await addTopicApi(topic.value);
             } else {
-                res = await updateBoardApi(board.value)
+                res = await updateTopicApi(topic.value)
             }
             if (res && res.code == 200) {
                 //信息提示
                 ElMessage.success(res.msg)
-                getBoardList()
+                getTopicList()
                 //关闭弹框
                 dialog.visible = false;
             }
@@ -210,10 +229,10 @@ let deleteBtn = (id: string) => {
             cancelButtonText: '取消',
             type: 'warning',
         }).then(async () => {
-            let res = await delBoardApi(id)
+            let res = await delTopicApi(id)
             if (res.code == 200) {
                 ElMessage.success(res.msg)
-                getBoardList()
+                getTopicList()
             }
         }).catch(() => {
             ElMessage.info("删除已取消！")
@@ -227,42 +246,27 @@ onMounted(() => {
     tableHeight.value = window.innerHeight - 60 - 20 * 2 - 32 - 20 * 2 - 50
     console.log(tableHeight.value);
     //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding) - (el-footer) -(el-main的padding) -(搜索表单)
-    getBoardList()
+    getTopicList()
 })
 // 合法性
 let isOccupied = async (rule: any, value: any, callback: any) => {
     //value值就是输入的值
-    if (mode.value === 1&&value===board.value.name) {
+    if (mode.value === 1 && value === topic.value.topicName) {
         //如果现在是修改模式的话则需要检验的是修改后的值
         callback()
         return
     }
     //如果是第一次(mode==0)添加则需要直接验证
-    let res = await isOccupiedBoardApi(value)
+    let res = await isOccupiedTopicApi(value)
     if (res && res.code == 200 && res.data)
         callback(new Error("版区名已被占用啦~"))
     callback()
 }
 let rules = {
-    name: [
+    topicName: [
         { required: true, message: '版区名称不能为空', trigger: 'blur' },
         { min: 1, max: 20, message: '名称长度在1到20个字符之间', trigger: 'blur' },
         { message: '版区名已被占用喵~', trigger: 'blur', validator: isOccupied }
-    ],
-    sortOrder: [
-        {
-            type: 'number',
-            required: true,
-            message: '排序值不能为空',
-            trigger: 'blur'
-        },
-        {
-            type: 'number',
-            min: 0,
-            max: 10,
-            message: '排序值需在0-10之间',
-            trigger: ['blur', 'change']
-        }
     ],
     description: [
         { required: true, message: '版区描述不能为空', trigger: 'blur' },

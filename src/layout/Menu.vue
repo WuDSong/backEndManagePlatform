@@ -122,6 +122,16 @@ let menuList = reactive([
                     roles: ["sys:postList"],
                 },
             },
+            {
+                path: "/topic",
+                component: "/communityManage/topicList",
+                name: "topicList",
+                meta: {
+                    title: "话题管理",
+                    icon: "Wallet",
+                    roles: ["sys:topicList"],
+                },
+            },
         ],
     },
     {

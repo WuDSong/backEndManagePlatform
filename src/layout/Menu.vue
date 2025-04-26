@@ -22,7 +22,6 @@ const activeIndex = computed(() => {
     return path;
 })
 
-
 //实现导航折叠
 const isCollapse = computed(() => {
     return useCollapseStore().collapse
@@ -38,7 +37,7 @@ const handleClose = (key: string, keyPath: string[]) => {
     console.log(key, keyPath)
 }
 
-//菜单数据 测试
+//菜单数据 测试 控制渲染
 let menuList = reactive([
     {
         path: "/dashboard",
@@ -65,7 +64,7 @@ let menuList = reactive([
                 component: "/system/AdminUser",
                 name: "adminUser",
                 meta: {
-                    title: "权限管理",
+                    title: "后台用户管理",
                     icon: "UserFilled",
                     roles: ["sys:adminUser"],
                 },
@@ -75,7 +74,7 @@ let menuList = reactive([
                 component: "/system/UserList",
                 name: "userList",
                 meta: {
-                    title: "用户管理",
+                    title: "微信用户管理",
                     icon: "Wallet",
                     roles: ["sys:userList"],
                 },
@@ -88,6 +87,16 @@ let menuList = reactive([
                     title: "菜单管理",
                     icon: "Menu",
                     roles: ["sys:menu"],
+                },
+            },
+            {
+                path: "/roleList",
+                component: "/system/roleList",
+                name: "roleList",
+                meta: {
+                    title: "角色管理",
+                    icon: "DocumentChecked",
+                    roles: ["sys:role"],
                 },
             },
         ],

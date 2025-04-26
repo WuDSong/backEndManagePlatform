@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-
+// 实现控制页面收缩后展开遗忘路由
 interface CollapseState {
     collapse: boolean
 }

@@ -19,7 +19,7 @@
                 <el-table-column prop="icon" label="图标" width="75">
                     <template #default="scope">
                         <!-- <div style="color: #686868">{{ scope.row.icon }}</div> -->
-                        <el-image :src="scope.row.icon"> </el-image>
+                        <el-image :src="scope.row.icon" :lazy="true" :preview-src-list="[scope.row.icon]" preview-teleported> </el-image>
                     </template>
                 </el-table-column>
                 <el-table-column prop="description" label="描述" min-width="300"></el-table-column>
@@ -127,7 +127,6 @@ let sizeChange = () => {
 }
 //修改对象
 let board = ref<Board>({//数据
-    boardId: '',
     name: '',
     icon: '',
     description: '',
@@ -184,7 +183,6 @@ let commit = async () => {
                 board.value.icon = ''
             else board.value.icon = uploadParam.value.fileList[0].url
             if (mode.value == 0) {
-                board.value.boardId = ''    //uid自动生成，不需要填
                 res = await addBoardApi(board.value);
             } else {
                 res = await updateBoardApi(board.value)

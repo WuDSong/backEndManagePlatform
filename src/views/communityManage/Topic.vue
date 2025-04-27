@@ -16,15 +16,16 @@
             <el-table :data="tableList" border stripe :max-height="tableHeight">
                 <el-table-column prop="topicId" label="TopicId" width="100" align="center" sortable></el-table-column>
                 <el-table-column prop="topicName" label="话题" align="center"></el-table-column>
-                <el-table-column prop="topicIcon" label="图标" width="75">
+                <el-table-column prop="topicIcon" label="图标" width="100">
                     <template #default="scope">
-                        <el-image :src="scope.row.topicIcon"> </el-image>
+                        <el-image :src="scope.row.topicIcon" :lazy="true" :preview-src-list="[scope.row.topicIcon]"
+                        :z-index="3" style="height: 100px;" preview-teleported fit="contain"> </el-image>
                     </template>
                 </el-table-column>
                 <el-table-column prop="topicDescription" label="描述" min-width="200">
                     <!-- show-overflow-tooltip 会只显示一行，而我想要显示的是不止一行 ，此外tooltip也是一行-->
                     <template #default="scope">
-                        <el-text line-clamp="2">
+                        <el-text line-clamp="3">
                             {{ scope.row.topicDescription }}
                         </el-text>
                         <!-- el-text 居然可以满足 自动显示tooltip,虽然不好看但是可以用 -->
@@ -75,7 +76,7 @@
                     <el-input v-model="topic.topicName" style="width: 150px;" placeholder="喵喵喵"></el-input>
                 </el-form-item>
                 <el-form-item prop="topicDescription" label="描述">
-                    <el-input v-model="topic.topicDescription" type="textarea" :rows="3" placeholder="描述一下吧喵q(≧▽≦q)~"
+                    <el-input v-model="topic.topicDescription" type="textarea" :rows="4" placeholder="描述一下吧喵q(≧▽≦q)~"
                         style="width:360px;"></el-input>
                 </el-form-item>
                 <el-form-item prop="topicIcon" label="图标">

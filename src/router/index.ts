@@ -4,8 +4,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path:'/',
-      redirect:'/dashboard' //test
+      path: '/',
+      redirect: '/dashboard' //test
     },
     {
       path: "/home",
@@ -62,6 +62,16 @@ const router = createRouter({
             title: "菜单管理",
             icon: "Menu",
             roles: ["sys:menu"],
+          },
+        },
+        {
+          path: "/roleList",
+          component: () => import('@/views/system/RoleList.vue'),
+          name: "roleList",
+          meta: {
+            title: "角色管理",
+            icon: "DocumentChecked",
+            roles: ["sys:role"],
           },
         },
       ],
@@ -179,33 +189,38 @@ const router = createRouter({
       component: Layout,
       name: "test",
       meta: {
-          title: "实验室",
-          icon: "Setting",
-          roles: ["sys:report"],
+        title: "实验室",
+        icon: "Setting",
+        roles: ["sys:report"],
       },
       children: [
-          {
-              path: "/t1",
-              component: ()=>import('@/views/test/t1.vue'),
-              name: "t1",
-              meta: {
-                  title: "上传测试",
-                  icon: "Postcard",
-                  roles: ["sys:reportList"],
-              },
+        {
+          path: "/t1",
+          component: () => import('@/views/test/t1.vue'),
+          name: "t1",
+          meta: {
+            title: "上传测试",
+            icon: "Postcard",
+            roles: ["sys:reportList"],
           },
-          {
-            path: "/t2",
-            component: ()=>import('@/views/test/t2.vue'),
-            name: "t2",
-            meta: {
-                title: "t2",
-                icon: "Postcard",
-                roles: ["sys:reportList"],
-            },
+        },
+        {
+          path: "/t2",
+          component: () => import('@/views/test/t2.vue'),
+          name: "t2",
+          meta: {
+            title: "t2",
+            icon: "Postcard",
+            roles: ["sys:reportList"],
+          },
         },
       ],
-  }
+    },
+    {
+      path: '/login',
+      name: "login",
+      component: () => import('@/views/login/Login.vue')
+    }
   ],
 })
 

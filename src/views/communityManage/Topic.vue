@@ -70,6 +70,7 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
+            {{ topic }}
             <el-form :model="topic" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
                 label-position="right" style="padding: 10px 20px;">
                 <el-form-item prop="topicName" label="话题">
@@ -105,6 +106,7 @@ import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
 import { formatNumber } from "@/utils/number"
 import { icons } from '@element-plus/icons-vue/global';
+import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<TopicParam>({
@@ -151,6 +153,8 @@ let topic = ref<Topic>({//数据
  * 保留`topicIcon`属性，因为Vue的响应式对象一旦添加了属性，会被保留。因此，在`addBtn`中，仅仅重置表单可能不够，
  * 需要彻底重置`topic.value`为一个新对象，确保没有残留属性。 */
 
+//  配置 prop，不配置的执行此方法，该输入框值不会重置。
+
 //弹窗相关--------------------------------------------------------
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
 let uploadParam = ref<uploadImageParameter>({ //上传图片的模式
@@ -178,7 +182,8 @@ let editBtn = (row: Topic) => {
     dialog.title = '修改版区信息'
     dialog.visible = true
     nextTick(() => {
-        Object.assign(topic.value, row)
+        // Object.assign(topic.value, row)
+        OBJAssignExisting(topic.value,row)
     })
     addFormRef.value?.resetFields()//清空表单
     uploadParam.value.fileList = []

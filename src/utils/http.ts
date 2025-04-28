@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus';
 //axios请求配置
 const config = {
     baseURL: "http://localhost:12345",
-    //允许携带cookie
+    //允许携带cookie 解决sesson不一致的问题
     withCredentials: true,
     timeout: 10000
 }

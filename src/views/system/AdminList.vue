@@ -69,6 +69,7 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
+            <!-- {{ sysUser }} -->
             <el-form :model="sysUser" ref="addFormRef" :rules="rules" :inline="true" label-width="80px"
                 label-position="right">
                 <el-form-item prop="username" label="用户名">
@@ -98,9 +99,9 @@
                     </el-radio-group>
                 </el-form-item><br>
                 <el-form-item prop="rid" label="角色">
-                    <el-select v-model="sysUser.rid" value-key="" placeholder="请选择角色" clearable filterable @change="">
-                        <el-option v-for="item in options" :key="item.rid" :label="item.roleName" :value="item.rid">
-                        </el-option>
+                    <!-- filterableSelect 组件是否可筛选  remote是否从服务器远程加载  multiple是否多选 -->
+                    <el-select v-model="sysUser.rid" placeholder="请选择角色" clearable filterable remote :remote-method="getRoleList">
+                        <el-option v-for="item in options" :key="item.rid" :label="item.roleName" :value="item.rid"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -119,6 +120,7 @@ import { ElMessage, ElMessageBox, ElNotification, type FormInstance } from 'elem
 import { type Role } from "@/api/role/RoleModel"
 import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
+import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<sysUserParam>({
@@ -165,22 +167,16 @@ let sysUser = ref<SySUser>({//数据
 })
 
 //弹窗相关--------------------------------------------------------
-let options = ref<Role[]>([])//角色选项
+let options = ref<Role[]>([]) //角色选项
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
-
 //表单ref属性
 const addFormRef = ref<FormInstance>()
 //获取角色列表
-let getRoleList = async () => {
-    let res = await getRoleListApi()
-    // console.log(res)
-    if (res && res.code == 200)
+let getRoleList = async (query:string) => {
+    let res = await getRoleListApi(query)
+    if (res && res.code == 200) {
         options.value = res.data
-    else ElNotification({
-        title: 'Error',
-        message: '无法新建角色',
-        type: 'error',
-    })
+    }
 }
 //点击新建用户，显示弹窗
 let addBtn = () => {
@@ -188,7 +184,7 @@ let addBtn = () => {
     dialog.width = 700
     addFormRef.value?.resetFields()//清空表单
     onShow()// dialog.visible=true //显示弹窗
-    getRoleList()
+    getSysUserList()
 }
 let editBtn = (user: SySUser) => {
     mode.value = 1
@@ -198,11 +194,11 @@ let editBtn = (user: SySUser) => {
     // addFormRef.value?.resetFields()//清空表单
     //当数据更新了，在dom中渲染后，自动执行该函数
     nextTick(() => {
-        Object.assign(sysUser.value, user) //把user-->sysuser
+        // Object.assign(sysUser.value, user) //把user-->sysuser，但是会把时间一起复制过来
+        OBJAssignExisting(sysUser.value,user)
     })
-    // console.log(sysUser.value);
     addFormRef.value?.resetFields()//清空表单
-    getRoleList()
+    getSysUserList()
 }
 //点击提交
 let commit = async () => {

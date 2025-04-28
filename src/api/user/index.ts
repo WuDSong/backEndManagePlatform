@@ -1,5 +1,5 @@
 import http from "@/utils/http";
-import type { SySUser, sysUserParam } from "./UserModel";
+import type { LoginParm, SySUser, sysUserParam } from "./UserModel";
 
 //查找后台用户列表
 export const getSysUserListApi = (param: sysUserParam) => {
@@ -22,6 +22,15 @@ export const delSysUserApi = (param: string) => {
 }
 
 //判断用户名是否被占用
-export const isOccupiedSysUserApi =(param:string)=>{
-    return http.get("/api/sysUser/isOccupied/"+param)
+export const isOccupiedSysUserApi = (param: string) => {
+    return http.get("/api/sysUser/isOccupied/" + param)
+}
+
+//验证码
+export const getImageApi = () => {
+    return http.get("/api/captcha")
+}
+//登录
+export const loginApi = (parm: LoginParm) => {
+    return http.post("/api/sysUser/login", parm)
 }

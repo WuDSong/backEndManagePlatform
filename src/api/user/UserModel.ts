@@ -7,16 +7,23 @@ export type SySUser = { //默认不是管理员，启用状态
     password: string,
     sex?: string,
     phone: string,
-    rid?:string,
-    email:string,
-    status?:string,
-    role?:Role
+    rid?: string,
+    email: string,
+    status?: string,
+    role?: Role
 }
 
 //Admin用户查找
-export type sysUserParam={
+export type sysUserParam = {
     username: string,
-    curPage:Number,
-    pageSize:Number,
-    total?:number
+    curPage: Number,
+    pageSize: Number,
+    total?: number
+}
+
+//登录参数
+export type LoginParm = {
+    username: string,
+    password: string,
+    code: string
 }

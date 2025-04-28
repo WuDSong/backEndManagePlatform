@@ -67,6 +67,7 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
+            <div>{{ banner }}</div>
             <el-form :model="banner" ref="addFormRef" :rules="rules" label-width="130px" :inline="true"
                 label-position="right" style="padding: 10px 20px;">
                 <el-form-item prop="title" label="轮播图标题">
@@ -142,6 +143,7 @@ import type { Banner, BannerParam } from '@/api/banner/BannerModel';
 import { addBannerApi, delBannerApi, getBannerListApi, updateBannerApi } from '@/api/banner';
 import { getPostByIdApi, getPostListApi } from '@/api/post';
 import type { Post, PostParam } from '@/api/post/PostModel';
+import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<BannerParam>({
@@ -177,6 +179,7 @@ let sizeChange = () => {
 // 弹窗相关--------------------------------------------------------------
 // 修改对象
 let banner = ref<Banner>({//数据
+    id:'',
     title: "",
     sortOrder: 0,
     isActive:true
@@ -214,7 +217,8 @@ let editBtn = async (row: Banner) => {
     dialog.title = '修改版区信息'
     dialog.visible = true
     nextTick(() => {
-        Object.assign(banner.value, row)
+        // Object.assign(banner.value, row)
+        OBJAssignExisting(banner.value, row)
     })
     addFormRef.value?.resetFields()//清空表单
     uploadParam.value.fileList = []

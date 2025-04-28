@@ -48,7 +48,9 @@
     <SysDialog :title="'新增(所有项必填)'" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
-            <el-form :model="sysMenu" ref="addFormRef" :rules="rules" label width="80px" :inline="false" size="default">
+            <!-- {{ sysMenu }} -->
+            <el-form :model="sysMenu" ref="addFormRef" :rules="rules" :inline="false" size="default"
+            label-position="right" label-width="auto" >
                 <el-row>
                     <el-col :span="11" :offset="0">
                         <el-form-item label="菜单类型" prop="menuType">
@@ -128,6 +130,7 @@ import { type SysMenu } from '@/api/menu/MenuModel';
 import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
 import { addMenuApi, delMenuApi, getMenuTreeApi, updateMenuApi } from '@/api/menu/index'
+import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 
 let tableList = ref([])//表格数据
@@ -141,6 +144,7 @@ let getMenuTree = async () => {
 // 修改对象,添加对象
 let isRootMenu = ref(false)
 let sysMenu = ref<SysMenu>({//数据
+    mid:'',
     menuName: '',
     menuType: 1,
     parentId: 0,
@@ -184,7 +188,8 @@ let editBtn = (row: SysMenu) => {
     dialog.title = '修改菜单信息'
     dialog.visible = true
     nextTick(() => {
-        Object.assign(sysMenu.value, row)
+        // Object.assign(sysMenu.value, row)
+        OBJAssignExisting(sysMenu.value, row)
     })
     console.log(sysMenu.value);
     addFormRef.value?.resetFields()//清空表单
@@ -201,6 +206,7 @@ let commit = async () => {
             console.log('验证通过,准备添加菜单');
             let res = null
             if (mode.value == 0) { // 0:add  1:updata
+                sysMenu.value.mid=''
                 res = await addMenuApi(sysMenu.value)
             } else {
                 res = await updateMenuApi(sysMenu.value)

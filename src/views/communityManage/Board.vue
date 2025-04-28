@@ -46,6 +46,7 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
+            <!-- {{ board }} -->
             <el-form :model="board" ref="addFormRef" :rules="rules" label-width="80px" :inline="true"
                 label-position="right" style="padding: 10px 20px;">
                 <el-form-item prop="name" label="版区名字">
@@ -94,6 +95,7 @@ import { type Board, type BoardParam } from "@/api/board/BoardModel"
 import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
 import { icons } from '@element-plus/icons-vue/global';
+import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
 const searchParam = ref<BoardParam>({
@@ -127,6 +129,7 @@ let sizeChange = () => {
 }
 //修改对象
 let board = ref<Board>({//数据
+    boardId:'',
     name: '',
     icon: '',
     description: '',
@@ -152,6 +155,7 @@ let addBtn = () => {
     addFormRef.value?.resetFields()//清空表单
     //清空上传信息
     uploadParam.value.fileList = []
+    board.value.boardId=''
 }
 
 let editBtn = (row: Board) => {
@@ -160,7 +164,8 @@ let editBtn = (row: Board) => {
     dialog.title = '修改版区信息'
     dialog.visible = true
     nextTick(() => {
-        Object.assign(board.value, row)
+        // Object.assign(board.value, row)
+        OBJAssignExisting(board.value, row)
     })
     addFormRef.value?.resetFields()//清空表单
     uploadParam.value.fileList = []
@@ -183,6 +188,7 @@ let commit = async () => {
                 board.value.icon = ''
             else board.value.icon = uploadParam.value.fileList[0].url
             if (mode.value == 0) {
+                board.value.boardId=''
                 res = await addBoardApi(board.value);
             } else {
                 res = await updateBoardApi(board.value)

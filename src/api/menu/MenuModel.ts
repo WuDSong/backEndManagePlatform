@@ -1,5 +1,6 @@
 //menu add和修改
-export type SysMenu = { 
+export type SysMenu = {
+    mid?:string,
     menuName: string,
     menuType:number,
     parentId:number,

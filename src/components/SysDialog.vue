@@ -27,8 +27,8 @@ defineProps({
     },
     dialogVisible: {//是否显示弹窗
         type: Boolean,
-        require: true,
-        default: "false"
+        required: true,
+        default: false
     },
     width: {
         type: Number,

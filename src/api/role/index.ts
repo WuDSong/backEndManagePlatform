@@ -1,5 +1,5 @@
 import http from "@/utils/http"
-import type { Role } from "./RoleModel"
+import type { AssignMenuParams, Role } from "./RoleModel"
 
 //获取角色列表
 export const getRoleListApi = (roleName:string) => {
@@ -19,4 +19,8 @@ export const updateRoleApi = (param: Role) => {
 //del
 export const delRoleApi = (rid: string) => {
     return http.delete("/api/role/" + rid)
+}
+
+export const assignRoleMenu=(param:AssignMenuParams)=>{
+    return http.post("/api/role/assignMenu",param)
 }

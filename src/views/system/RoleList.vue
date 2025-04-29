@@ -1,7 +1,7 @@
 <template>
     <el-container style="height: 100%;" ref="box">
         <el-main style="overflow: hidden;">
-            <el-form :model="search" :inline="true" size="default">
+            <el-form :inline="true" size="default">
                 <el-form-item>
                     <el-input v-model="search" placeholder="请输入..." :prefix-icon="Search">
                     </el-input>
@@ -20,11 +20,13 @@
                 <el-table-column prop="description" label="描述" min-width="100" show-overflow-tooltip></el-table-column>
                 <el-table-column prop="createTime" label="创建时间" width="170" align="center"></el-table-column>
                 <el-table-column prop="userCount" label="用户数" width="90" align="center"></el-table-column>
-                <el-table-column label="操作" align="center" width="200">
+                <el-table-column label="操作" align="center" width="320">
                     <template #default="scope">
                         <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)"
-                            :disabled="scope.row.rid == 1 || scope.row.roleName == '超级管理员' || scope.row.roleKey == 'SUPER_ADMIN'">编辑</el-button>
-                        <el-button type="danger" icon="Delete" size="default" :disabled="scope.row.userCount > 0"
+                            :disabled="(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')">编辑</el-button>
+                        <el-button type="success" icon="Edit" size="default" @click="assignBtn(scope.row)"
+                            :disabled="(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')">分配菜单</el-button>
+                        <el-button type="danger" icon="Delete" size="default" :disabled="scope.row.userCount > 0||(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')"
                             @click="deleteBtn(scope.row.rid)">删除</el-button>
                     </template>
                 </el-table-column>
@@ -37,8 +39,8 @@
         :width="dialog.width">
         <template #content>
             <!-- <div>{{role}}</div> -->
-            <el-form :model="role" ref="addFormRef" :rules="rules" :inline="true" label-position="right" label-width="auto" 
-                style="padding: 10px 20px;">
+            <el-form :model="role" ref="addFormRef" :rules="rules" :inline="true" label-position="right"
+                label-width="auto" style="padding: 10px 20px;">
                 <el-form-item prop="roleName" label="角色名">
                     <el-input v-model="role.roleName" placeholder="角色名"></el-input>
                 </el-form-item>
@@ -52,12 +54,14 @@
             </el-form>
         </template>
     </SysDialog>
+    <AssignTree ref="assignTree"></AssignTree>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
-import { ElMessage, ElMessageBox, ElNotification, type FormInstance, type UploadUserFile } from 'element-plus';
+import AssignTree from './AssignTree.vue';
+import { descriptionItemProps, ElMessage, ElMessageBox, ElNotification, type FormInstance, type UploadUserFile } from 'element-plus';
 import { nextTick } from 'vue';
 import { Calendar, Search } from '@element-plus/icons-vue'
 import { addRoleApi, delRoleApi, getRoleListApi, updateRoleApi } from '@/api/role';
@@ -65,7 +69,7 @@ import type { Role } from '@/api/role/RoleModel';
 import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数
-const search = ref<string>('')
+const search = ref('')
 let tableList = ref<Role[]>([])//表格数据
 let getRoleList = async () => {
     let res = await getRoleListApi(search.value)
@@ -82,10 +86,10 @@ let resetBtn = () => {
 // 弹窗相关--------------------------------------------------------------
 // 修改对象
 let role = ref({//数据:此处不可以指定类型? 
-    rid:'',
+    rid: '',
     roleName: '',
     roleKey: '',
-    description:''
+    description: ''
 })
 
 let mode = ref(0) //0 时新建模式，1 时是修改编辑模式
@@ -116,7 +120,7 @@ let commit = async () => {
             // console.log(addModel);
             let res = null
             if (mode.value == 0) {
-                role.value.rid=''
+                role.value.rid = ''
                 res = await addRoleApi(role.value);
             } else {
                 res = await updateRoleApi(role.value)
@@ -153,6 +157,12 @@ let deleteBtn = (id: string) => {
             ElMessage.info("删除已取消！")
         })
 }
+// 分配菜单-------
+const assignTree = ref() //获取实例
+// 修改分配菜单按钮的点击事件
+const assignBtn = (row: Role) => {
+    assignTree.value.showDialog(row) // 调用子组件的显示方法
+};
 
 let box = ref(null)//用来挂载元素
 let tableHeight = ref(0)
@@ -163,8 +173,10 @@ onMounted(() => {
     //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding) -(el-main的padding) -(搜索表单)
     getRoleList()
 })
-let rules = {
 
+let rules = {
+    roleName: [{ required: true, message: "请输入角色名", trigger: "blur" }, { max: 20, min: 2, message: "角色名长度应为2-20个字符", trigger: "blur" }],
+    roleKey: [{ required: true, message: "请输入角色标识符", trigger: "blur" }],
 }
 </script>
 <style scoped>

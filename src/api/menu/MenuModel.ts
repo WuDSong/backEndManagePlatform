@@ -10,3 +10,10 @@ export type SysMenu = {
     visible?:number,
     perms:string
 }
+
+//获取当前用户的被分派菜单树 和 要查询用户被分派菜单id 需要查询的参数
+export type getAssignTreeParam={
+    userId:string,
+    userRid:string,
+    rid:string
+} 

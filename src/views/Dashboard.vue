@@ -1,124 +1,199 @@
 <template>
-    <el-main :style="{ height: mainHeight + 'px' }">
-        <!-- 数据统计 -->
-        <el-row :gutter="20" style="margin-bottom: 30px">
-            <el-col :span="6">
-                <div class="show-header" style="background:rgb(67,171,144)">
-                    <div class="show-num">{{ total.doTotal }}</div>
-                    <div class="bottom-text">待处理投诉</div>
+    <el-container style="height: 100%;" ref="box">
+        <el-main style="overflow: hidden;">
+            <div style="display: flex;justify-content: space-between;height: 320px">
+                <div id="chart" class="block" style="width: 65%"></div>
+                <div class="devInfo">
+                    <el-card style="max-width: 100%;display: block;">
+                        <h3 class="date">{{ formattedDate }}</h3>
+                        <h4 class="time">{{ formattedTime }}</h4>
+                    </el-card>
+                    <el-card style="max-width: 100%;display: block;">
+                        <h3 class="date">{{ formattedDate }}</h3>
+                        <h4 class="time">{{ formattedTime }}</h4>
+                    </el-card>
                 </div>
-            </el-col>
-            <el-col :span="6">
-                <div class="show-header" style="background: rgb(67,171,144)">
-                    <div class="show-num">{{ total.userTotal }}</div>
-                    <div class="bottom-text">用户总数</div>
-                </div>
-            </el-col>
-            <el-col :span="6">
-                <div class="show-header" style="background: rgb(67,171,144)">
-                    <div class="show-num">{{ total.unusedTotal }}</div>
-                    <div class="bottom-text">人工待审帖子总数</div>
-                </div>
-            </el-col>
-            <el-col :span="6">
-                <div class="show-header" style="background: rgb(67,171,144)">
-                    <div class="show-num">{{ total.imgTotal }}</div>
-                    <div class="bottom-text">人工待审图片总数</div>
-                </div>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20">
-            <el-col :span="12">
-                <el-card class="box-card">
-                    <div slot="header" class="clearfix">
-                        <span style="color: #000000; font-weight: 600; margin-bottom: 10px">最近投诉</span>
-                        <!-- 分割线 -->
-                        <el-divider></el-divider>
-                    </div>
-                    <div v-for="item in list" :key="item.reportId" class="text item">
-                        <span style="font-weight: 600; font-size: 14px">{{
-                            item.goodsName }}</span>
-                        <span style="margin-left: 30px; font-size: 14px">{{
-                            item.reason }}</span>
-                        <span style="margin-left: 30px; font-size: 14px">{{
-                            item.reportUser }}</span>
-                        <span style="margin-left: 30px; font-size: 14px">{{
-                            item.reportTime }}</span>
-                        <el-divider></el-divider>
-                    </div>
-                </el-card>
-            </el-col>
-            <el-col :span="12">
-                <el-card class="box-card">
-                    <div slot="header" class="clearfix">
-                        <span style="color: #000000; font-weight: 600; margin-bottom: 10px">日历</span>
-                        <el-divider></el-divider>
-                    </div>
-                    <el-calendar v-model="value" />
-                </el-card>
-            </el-col>
-        </el-row>
-    </el-main>
+            </div>
+            <el-card class="Panel">
+                <el-row :gutter="20">
+                    <el-col :span="5">
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#ffb650,#ff577f);">
+                            <div>1</div>
+                            <div>待处理投诉</div>
+                        </div>
+                    </el-col>
+                    <el-col :span="5">
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#50e2ff,#36b0f1);">
+                            <div>15</div>
+                            <div>待审核帖子</div>
+                        </div>
+                    </el-col>
+                    <el-col :span="5">
+                        <div class="PanelItem"
+                            style="background-image: linear-gradient(to right,rgb(121, 232, 211),rgb(0, 178, 166))">
+                            <div>2</div>
+                            <div>后台用户</div>
+                        </div>
+                    </el-col>
+                    <el-col :span="5">
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#6abeff,#7b57ff);">
+                            <div>1</div>
+                            <div>小程序重置密码申请</div>
+                        </div>
+                    </el-col>
+                    <el-col :span="4">
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#c3c3c3,#a6a6a6);">
+                            <div>更多功能</div>
+                            <div>敬请期待</div>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-card>
+        </el-main>
+    </el-container>
+
 </template>
 <script setup lang="ts">
-
-import { onMounted, nextTick, ref, reactive } from "vue";
+import * as echarts from 'echarts';
+import { onMounted, nextTick, ref, reactive, onUnmounted, computed } from "vue";
+import { getUserActiveOneMonthApi } from "@/api/log"
 //窗口高度
 const mainHeight = ref(0);
-//日历
-const value = ref(new Date());
-//获取总数
-const total = reactive({
-    doTotal: 165,
-    unusedTotal: 644,
-    userTotal: 48,
-    imgTotal:20
+// 图表
+let myChart: echarts.ECharts | null = null;
+// 初始化图表
+const option = {
+    title: {
+        text: '近30天小程序流量'
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    legend: {
+        data: ['用户活跃数', '用户注册数']
+    },
+    xAxis: {
+        type: 'category',
+        data: ['Mon']
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [
+        {
+            data: [0],
+            name: "用户活跃数",
+            type: 'line'
+        },
+        {
+            data: [0],
+            name: "用户注册数",
+            type: 'line'
+        }
+    ]
+};
+
+const getUserActiveOneMonth = async () => {
+    let res = await getUserActiveOneMonthApi()
+    if (res && res.code == 200) {
+        option.xAxis.data = res.data.dates
+        option.series[0].data = res.data.activeCounts
+        option.series[1].data = res.data.registerCounts
+        initChart()
+    }
+}
+const initChart = () => {
+    const chartDom = document.getElementById('chart')!;
+    myChart = echarts.init(chartDom);
+    myChart.setOption(option);
+};
+
+// 时间响应式变量
+const currentTime = ref(new Date())
+// 定时器句柄
+let timer: number | null = null
+// 格式化时间计算属性
+const formattedTime = computed(() => {
+    return currentTime.value.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    })
 })
 
-//投诉
-interface GoodsReport {
-    goodsId: number,
-    goodsName: string,
-    reason: string,
-    reportId: number,
-    reportTime: string,
-    reportUser: number,
-    status: string,
-}
-//获取投诉
-const list = ref<GoodsReport[]>([])
+// 格式化日期计算属性
+const formattedDate = computed(() => {
+    return currentTime.value.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        weekday: 'short'
+    })
+})
 
 //挂载
 onMounted(() => {
     nextTick(() => {
-        mainHeight.value = window.innerHeight;//监听窗口大小
+        getUserActiveOneMonth()
+        mainHeight.value = window.innerHeight - 60 - 20 * 2
+        //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding)
+        //每秒更新时间
+        timer = setInterval(() => {
+            currentTime.value = new Date()
+        }, 1000) as unknown as number
     });
-});
+
+})
+onUnmounted(() => {
+    myChart?.dispose()
+    if (timer) {
+        clearInterval(timer)
+    }
+})
 </script>
 <style lang="scss" scoped>
-.bottom-text {
-    bottom: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.1);
-    height: 25px;
-    line-height: 25px;
-    text-align: center;
-    position: absolute;
-    font-weight: 600;
+.block {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    padding: 20px;
 }
 
-.show-header {
-    background: #00c0ef;
-    color: #fff;
-    height: 100px;
-    border-radius: 5px;
-    position: relative;
+.devInfo {
+    width: 30%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    // border: #00c0ef 1px solid;
 }
 
-.show-num {
-    font-size: 38px;
-    font-weight: 600;
-    padding:5px;
-    text-align: center;
+.Panel {
+    margin-top: 20px;
+
+    .PanelItem {
+        box-sizing: border-box;
+        height: 110px;
+        // border: 1px salmon solid;
+        border-radius: 5px;
+        // text-align: center;
+        // line-height: 110px;
+        color: #ffffff;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-weight: bold;
+        font-size: large;
+        transition: all 0.5s;
+    }
+    .PanelItem:hover{
+        box-shadow: 0 5px 12px 0 rgba(0, 0, 0, 0.3)
+    }
+}
+
+.myColor {
+    background-color: #a6a6a6;
 }
 </style>

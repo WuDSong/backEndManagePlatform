@@ -19,6 +19,7 @@ const router = createRouter({
           meta: {
             title: "首页",
             icon: "#icondashboard",
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -42,6 +43,7 @@ const router = createRouter({
             title: "管理员管理",
             icon: "UserFilled",
             roles: ["sys:adminList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
         {
@@ -52,6 +54,7 @@ const router = createRouter({
             title: "用户管理",
             icon: "Wallet",
             roles: ["sys:userList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
         {
@@ -62,6 +65,7 @@ const router = createRouter({
             title: "菜单管理",
             icon: "Menu",
             roles: ["sys:menu"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
         {
@@ -72,6 +76,7 @@ const router = createRouter({
             title: "角色管理",
             icon: "DocumentChecked",
             roles: ["sys:role"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -84,6 +89,7 @@ const router = createRouter({
         title: "社区管理",
         icon: "Setting",
         roles: ["sys:communityManage"],
+        requiresAuth: true  //// 需要登录认证
       },
       children: [
         {
@@ -94,16 +100,7 @@ const router = createRouter({
             title: "版区管理",
             icon: "UserFilled",
             roles: ["sys:board"],
-          },
-        },
-        {
-          path: "/post",
-          component: () => import("@/views/communityManage/PostList.vue"),
-          name: "postList",
-          meta: {
-            title: "帖子管理",
-            icon: "Wallet",
-            roles: ["sys:postList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
         {
@@ -114,28 +111,42 @@ const router = createRouter({
             title: "话题管理",
             icon: "Wallet",
             roles: ["sys:topicList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
     },
     {
-      path: "/comment",
+      path: "/post",
       component: Layout,
-      name: "comment",
+      name: "post",
       meta: {
-        title: "评论管理",
+        title: "帖子管理",
         icon: "Setting",
-        roles: ["sys:comment"],
+        roles: ["sys:post"],
+        requiresAuth: true  //// 需要登录认证
       },
       children: [
         {
-          path: "/commentList",
-          component: () => import("@/views/comment/CommentList.vue"),
-          name: "commentList",
+          path: "/postReview",
+          component: () => import("@/views/post/PostReview.vue"),
+          name: "postReview",
           meta: {
-            title: "评论列表",
-            icon: "UserFilled",
-            roles: ["sys:commentList"],
+            title: "帖子管理",
+            icon: "Wallet",
+            roles: ["sys:post:review"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        },
+        {
+          path: "/postList",
+          component: () => import("@/views/post/PostList.vue"),
+          name: "postList",
+          meta: {
+            title: "帖子管理",
+            icon: "Wallet",
+            roles: ["sys:postList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -148,6 +159,7 @@ const router = createRouter({
         title: "广告管理",
         icon: "Setting",
         roles: ["sys:banner"],
+        requiresAuth: true  //// 需要登录认证
       },
       children: [
         {
@@ -158,6 +170,7 @@ const router = createRouter({
             title: "广告列表",
             icon: "Postcard",
             roles: ["sys:bannerList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -170,6 +183,7 @@ const router = createRouter({
         title: "投诉管理",
         icon: "Setting",
         roles: ["sys:report"],
+        requiresAuth: true  //// 需要登录认证
       },
       children: [
         {
@@ -177,9 +191,10 @@ const router = createRouter({
           component: () => import("@/views/report/ReportList.vue"),
           name: "reportList",
           meta: {
-            title: "广告列表",
+            title: "举报列表",
             icon: "Postcard",
             roles: ["sys:reportList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -192,6 +207,7 @@ const router = createRouter({
         title: "实验室",
         icon: "Setting",
         roles: ["sys:report"],
+        requiresAuth: true  //// 需要登录认证
       },
       children: [
         {
@@ -202,6 +218,7 @@ const router = createRouter({
             title: "上传测试",
             icon: "Postcard",
             roles: ["sys:reportList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
         {
@@ -212,6 +229,7 @@ const router = createRouter({
             title: "t2",
             icon: "Postcard",
             roles: ["sys:reportList"],
+            requiresAuth: true  //// 需要登录认证
           },
         },
       ],
@@ -219,9 +237,42 @@ const router = createRouter({
     {
       path: '/login',
       name: "login",
-      component: () => import('@/views/login/Login.vue')
+      component: () => import('@/views/login/Login.vue'),
+      meta: { guestOnly: true } // 仅允许未登录用户访问
     }
   ],
 })
+
+
+
+// 全局前置守卫
+import { userStore } from '@/stores/user'
+router.beforeEach(async (to, from, next) => {
+  const userInfo = userStore()
+  // 1. 检查是否需要登录权限
+  if (to.meta.requiresAuth) {
+    // 2. 验证用户登录状态
+    const isAuthenticated = await userInfo.checkAuth()
+    if (!isAuthenticated) {
+      // 3. 未登录时跳转登录页，携带原路径
+      return next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    }
+  }
+
+  // 4. 已登录时禁止访问登录/注册页 ？
+  // if (to.meta.guestOnly) {
+  //   const isAuth = await userInfo.checkAuth()
+  //   if (isAuth) {
+  //     return next({ path: from.fullPath || '/' })
+  //   }
+  // }
+  next()
+})
+
+
+
 
 export default router

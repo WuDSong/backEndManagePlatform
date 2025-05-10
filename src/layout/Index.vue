@@ -6,9 +6,13 @@
         </el-aside>
         <el-container>
             <el-header class="header">
-                <!-- 折叠按钮 -->
-                <Collapse></Collapse>
-                <BreadCrumb></BreadCrumb>
+                <!-- 顶部 -->
+                <div style="display: flex;align-items: center;">
+                    <!-- 折叠按钮 -->
+                    <Collapse></Collapse>
+                    <BreadCrumb></BreadCrumb>
+                </div>
+                <UserCenter></UserCenter>
             </el-header>
             <el-main class="main">
                 <router-view></router-view>
@@ -21,6 +25,7 @@
 import Menu from './Menu.vue';
 import Collapse from './Collapse.vue';
 import BreadCrumb from './BreadCrumb.vue'
+import UserCenter from './UserCenter.vue';
 </script>
 <style lang="scss" scoped>
 .container {
@@ -35,6 +40,7 @@ import BreadCrumb from './BreadCrumb.vue'
         background-color: #009688;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         color: #FFF;
     }
 

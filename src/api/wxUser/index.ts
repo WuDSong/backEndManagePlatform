@@ -23,5 +23,5 @@ export const delWxUserApi = (param: string) => {
 
 //重置密码
 export const updatePasswordApi = (param: WxUser) => {
-    return http.post("/api/wxUser/updatePassword", param)
+    return http.post("/api/wxUser/resetPassword", param)
 }

@@ -37,7 +37,7 @@
 </template>
 <script setup lang="ts">
 import { getImageApi, loginApi } from '@/api/user';
-import { onMounted, reactive, ref } from 'vue';
+import { nextTick, onMounted, reactive, ref } from 'vue';
 import type { FormInstance } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { userStore } from '@/stores/user';
@@ -74,10 +74,13 @@ const commit = () => {
             let res = await loginApi(loginModel)
             if (res.code == 200) {
                 console.log(res)
-                store.userId=res.data.userid
-                store.username=res.data.username
+                store.userId = res.data.userid
+                store.username = res.data.username
+                store.menuRouterTree = res.data.menuRouterTree
+                store.codeList = res.data.codeList
+                store.rid = res.data.rid
                 //跳转首页
-                router.push({ path: '/home' })
+                router.replace({ path: '/' })
             }
         } else {
             console.log("不通过")
@@ -90,7 +93,8 @@ const rules = reactive({
         { required: true, message: '请输入用户名称', trigger: ['blur', 'change'] }
     ],
     password: [
-        { required: true, message: '请输入用户密码', trigger: ['blur', 'change'] }
+        { required: true, message: '请输入用户密码', trigger: ['blur', 'change'] },
+        { min: 6, max: 30, message: '密码是6-30位', trigger: ['blur', 'change'] }
     ],
     code: [
         {
@@ -99,6 +103,10 @@ const rules = reactive({
     ]
 })
 onMounted(() => {
+    nextTick(() => {
+        store.resetStore()
+        sessionStorage.clear();
+    })
     getImage()
 })
 </script>

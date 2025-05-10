@@ -4,10 +4,11 @@
             <el-form :inline="true" size="default">
                 <el-form-item>
                     <el-button type="primary" icon="Plus" @click="addBtn">新增</el-button>
+                    <!-- <el-button icon="FullScreen" @click="changeExpand">新增</el-button> -->
                 </el-form-item>
             </el-form>
             <!-- 表格                    边框    是否为斑马纹   最大高度          默认展开所有行     row-key行数据的 Key，用来优化 Table 的渲染；-->
-            <el-table :data="tableList" border stripe :max-height="tableHeight" default-expand-all row-key="mid">
+            <el-table :data="tableList" border stripe :max-height="tableHeight" :default-expand-all="expand" row-key="mid">
                 <el-table-column prop="mid" label="MID" width="80" align="center" sortable></el-table-column>
                 <el-table-column prop="menuName" label="菜单" align="center"></el-table-column>
                 <el-table-column prop="icon" label="图标" width="60" align="center">
@@ -132,7 +133,10 @@ import type { uploadImageParameter } from '@/api/img/uploadImageModel';
 import { addMenuApi, delMenuApi, getMenuTreeApi, updateMenuApi } from '@/api/menu/index'
 import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
-
+const expand=ref(false)
+const changeExpand=()=>{
+    expand.value=!expand.value
+}
 let tableList = ref([])//表格数据
 let getMenuTree = async () => {
     let res = await getMenuTreeApi()

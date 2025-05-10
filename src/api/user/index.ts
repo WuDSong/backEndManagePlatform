@@ -1,5 +1,5 @@
 import http from "@/utils/http";
-import type { LoginParm, SySUser, sysUserParam } from "./UserModel";
+import type { LoginParm, SySUser, sysUserParam, UpdateParam } from "./UserModel";
 
 //查找后台用户列表
 export const getSysUserListApi = (param: sysUserParam) => {
@@ -33,4 +33,8 @@ export const getImageApi = () => {
 //登录
 export const loginApi = (parm: LoginParm) => {
     return http.post("/api/sysUser/login", parm)
+}
+// 更新密码
+export const updatePasswordApi = (param: UpdateParam) => {
+    return http.put("/api/sysUser/updatePassword", param)
 }

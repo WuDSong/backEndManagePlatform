@@ -27,3 +27,10 @@ export type LoginParm = {
     password: string,
     code: string
 }
+
+//修改密码参数
+export type UpdateParam = {
+    userId: string;
+    oldPassword: string;
+    password: string;
+}

@@ -13,6 +13,7 @@ import MenuItem from './MenuItem.vue';
 import { useRoute } from 'vue-router'; //获取路由信息
 import MenuLogo from './MenuLogo.vue'
 import { useCollapseStore } from '@/stores/collapse';
+import { userStore } from '@/stores/user';
 //获取路由信息
 const route = useRoute();
 //获取激活的父菜单，解决刷新页面后，父菜单折叠而导致子菜单不可见
@@ -26,6 +27,7 @@ const activeIndex = computed(() => {
 const isCollapse = computed(() => {
     return useCollapseStore().collapse
 })
+
 //sub-menu展开
 const handleOpen = (key: string, keyPath: string[]) => {
     console.log("sub-menu open");
@@ -36,9 +38,14 @@ const handleClose = (key: string, keyPath: string[]) => {
     console.log("sub-menu close");
     console.log(key, keyPath)
 }
+//菜单数据获取
+let ustore = userStore()
+let menuList=computed(()=>{
+    return ustore.menuRouterTree
+})
 
 //菜单数据 测试 控制渲染
-let menuList = reactive([
+let menuList1 = reactive([
     {
         path: "/dashboard",
         component: "Layout",

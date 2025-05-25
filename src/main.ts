@@ -21,6 +21,13 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
+
+// 添加全局垫片
+window.global = window;
+(window as any).process = {
+  env: { DEBUG: undefined },
+};
+
 app.use(pinia)
 app.use(router)
 app.use(ElementPlus)

@@ -25,3 +25,10 @@ export const delMenuApi = (param: string) => {
 export const getRoleAssignMenuTree=(param:getAssignTreeParam)=>{
     return http.get("/api/sysMenu/getAssignTree",param);
 }
+
+
+
+// 获取当前用户的路由菜单树
+export const getMyRouterTreeApi =(userId:string)=>{
+    return http.get("/api/sysMenu/getCurrentUserTree/"+userId)
+}

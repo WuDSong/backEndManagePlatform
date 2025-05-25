@@ -1,10 +1,11 @@
 //board
-export type Board = { 
+export type Board = {
     boardId?: string,  
     name: string,
     icon?: string,
     description: string,
-    sortOrder?: number
+    sortOrder?: number,
+    parentId?:string
 }
 
 //board查找

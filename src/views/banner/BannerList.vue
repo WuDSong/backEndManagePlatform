@@ -67,7 +67,7 @@
     <SysDialog :title="dialog.title" :dialogVisible="dialog.visible" @onClose="onClose" @onConfirm="commit"
         :width="dialog.width">
         <template #content>
-            <div>{{ banner }}</div>
+            <!-- <div>{{ banner }}</div> -->
             <el-form :model="banner" ref="addFormRef" :rules="rules" label-width="130px" :inline="true"
                 label-position="right" style="padding: 10px 20px;">
                 <el-form-item prop="title" label="轮播图标题">

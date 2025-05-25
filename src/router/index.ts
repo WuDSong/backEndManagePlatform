@@ -117,41 +117,6 @@ const router = createRouter({
       ],
     },
     {
-      path: "/post",
-      component: Layout,
-      name: "post",
-      meta: {
-        title: "帖子管理",
-        icon: "Setting",
-        roles: ["sys:post"],
-        requiresAuth: true  //// 需要登录认证
-      },
-      children: [
-        {
-          path: "/postReview",
-          component: () => import("@/views/post/PostReview.vue"),
-          name: "postReview",
-          meta: {
-            title: "帖子管理",
-            icon: "Wallet",
-            roles: ["sys:post:review"],
-            requiresAuth: true  //// 需要登录认证
-          },
-        },
-        {
-          path: "/postList",
-          component: () => import("@/views/post/PostList.vue"),
-          name: "postList",
-          meta: {
-            title: "帖子管理",
-            icon: "Wallet",
-            roles: ["sys:postList"],
-            requiresAuth: true  //// 需要登录认证
-          },
-        },
-      ],
-    },
-    {
       path: "/banner",
       component: Layout,
       name: "banner",
@@ -187,16 +152,73 @@ const router = createRouter({
       },
       children: [
         {
-          path: "/reportList",
-          component: () => import("@/views/report/ReportList.vue"),
+          path: "/commentList",
+          component: () => import("@/views/report/CommentList.vue"),
           name: "reportList",
           meta: {
-            title: "举报列表",
+            title: "举报评论列表",
             icon: "Postcard",
             roles: ["sys:reportList"],
             requiresAuth: true  //// 需要登录认证
           },
         },
+        {
+          path: "/postReview",
+          component: () => import("@/views/report/PostReview.vue"),
+          name: "postReview",
+          meta: {
+            title: "帖子审核",
+            icon: "Wallet",
+            roles: ["sys:post:review"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        },
+        {
+          path: "/postList",
+          component: () => import("@/views/report/PostList.vue"),
+          name: "postList",
+          meta: {
+            title: "帖子管理",
+            icon: "Wallet",
+            roles: ["sys:postList"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        },
+        {
+          path: "/addBoard",
+          component: () => import("@/views/report/AddBoard.vue"),
+          name: "addBoard",
+          meta: {
+            title: "版区申请",
+            icon: "Wallet",
+            roles: ["sys:board:add"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        },
+      ],
+    },
+    {
+      path: "/feedback",
+      component: Layout,
+      name: "feedback",
+      meta: {
+        title: "反馈与建议",
+        icon: "Failed",
+        roles: ["sys:feedback"],
+        requiresAuth: true  //// 需要登录认证
+      },
+      children: [
+        {
+          path: "/appFeedback",
+          component: () => import("@/views/feedback/app.vue"),
+          name: "appFeedback",
+          meta: {
+            title: "小程序反馈",
+            icon: "Failed",
+            roles: ["sys:appFeedback"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        }
       ],
     },
     {
@@ -227,6 +249,17 @@ const router = createRouter({
           name: "t2",
           meta: {
             title: "t2",
+            icon: "Postcard",
+            roles: ["sys:reportList"],
+            requiresAuth: true  //// 需要登录认证
+          },
+        },
+        {
+          path: "/t3",
+          component: () => import('@/views/test/t3.vue'),
+          name: "t3",
+          meta: {
+            title: "t3",
             icon: "Postcard",
             roles: ["sys:reportList"],
             requiresAuth: true  //// 需要登录认证

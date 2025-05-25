@@ -4,43 +4,38 @@
             <el-form :inline="true" size="default">
                 <el-form-item>
                     <el-button type="primary" icon="Plus" @click="addBtn">新增</el-button>
-                    <!-- <el-button icon="FullScreen" @click="changeExpand">新增</el-button> -->
                 </el-form-item>
             </el-form>
             <!-- 表格                    边框    是否为斑马纹   最大高度          默认展开所有行     row-key行数据的 Key，用来优化 Table 的渲染；-->
-            <el-table :data="tableList" border stripe :max-height="tableHeight" :default-expand-all="expand"
-                row-key="mid">
-                <el-table-column prop="mid" label="MID" width="80" align="center" sortable></el-table-column>
-                <el-table-column prop="menuName" label="菜单" align="center"></el-table-column>
-                <el-table-column prop="icon" label="图标" width="60" align="center">
+            <el-table :data="tableList" border stripe :max-height="tableHeight" default-expand-all row-key="boardId">
+                <el-table-column prop="boardId" label="BoardID" width="120" align="center" sortable></el-table-column>
+                <el-table-column prop="name" label="版区" align="center"></el-table-column>
+                <el-table-column prop="icon" label="图标" width="75">
                     <template #default="scope">
-                        <el-icon>
-                            <component v-if="scope.row.icon" :is="scope.row.icon"></component>
-                        </el-icon>
+                        <!-- <div style="color: #686868">{{ scope.row.icon }}</div> -->
+                        <el-image :src="scope.row.icon" :lazy="true" :preview-src-list="[scope.row.icon]"
+                            preview-teleported> </el-image>
                     </template>
                 </el-table-column>
-                <el-table-column prop="menuType" label="菜单类型" align="center" width="90">
+                <el-table-column prop="description" label="描述" min-width="300"></el-table-column>
+                <el-table-column prop="sortOrder" label="序号" width="60" align="center"></el-table-column>
+                <el-table-column prop="status" label="状态" width="70" align="center">
                     <template #default="scope">
-                        <el-tag v-if="scope.row.menuType == '1'" type="success" size="default">菜单</el-tag>
-                        <el-tag v-if="scope.row.menuType == '2'" type="danger" size="default">按钮</el-tag>
+                        <!-- <el-tag v-if="scope.row.status == 'active'" type="success" effect="plain">启用中</el-tag>
+                        <el-tag v-if="scope.row.status == 'banned'" type="danger" effect="plain">禁用中</el-tag> -->
+                        <el-tooltip :content="'userStatus: ' + scope.row.status" placement="top" loading>
+                            <el-switch class="mt-2"
+                                style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
+                                :inactive-icon="Close" inline-prompt :active-icon="Check" v-model="scope.row.status"
+                                active-value="active" inactive-value="banned" @change="changeBoardStatus(scope.row)" />
+                        </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="parentId" label="上级菜单序号" width="110"></el-table-column>
-                <el-table-column prop="path" label="路由" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="perms" label="权限字段" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="sort" label="序号" width="60" align="center"></el-table-column>
-
-                <el-table-column label="操作" align="center" min-width="150">
+                <el-table-column label="操作" align="center" min-width="200">
                     <template #default="scope">
                         <el-button type="primary" icon="Edit" size="default" @click="editBtn(scope.row)">编辑</el-button>
                         <el-button type="danger" icon="Delete" size="default"
-                            :disabled="scope.row.children && scope.row.children.length > 0"
-                            @click="deleteBtn(scope.row.mid)">删除</el-button>
-                        <!-- <el-button v-if="scope.row.visible" type="info" size="default" @click="changeVisible(scope.row)"
-                            :disabled="scope.row.menuType != '1'">隐藏</el-button>
-                        <el-button v-else type="info" size="default" @click="changeVisible(scope.row)"
-                            :disabled="scope.row.menuType != '1'">显示</el-button> -->
-
+                            @click="deleteBtn(scope.row.boardId)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -132,15 +127,15 @@ import { type SysMenu } from '@/api/menu/MenuModel';
 import { addMenuApi, delMenuApi, getMenuTreeApi, getMyRouterTreeApi, updateMenuApi } from '@/api/menu/index'
 import { OBJAssignExisting } from '@/utils/ObjectCopy';
 import { userStore } from '@/stores/user';
+import { getBoardTreeApi, updateBoardApi } from '@/api/board';
+import { Calendar, Search, Check, Close } from '@element-plus/icons-vue'
+import type { Board } from '@/api/board/BoardModel';
 const uStore = userStore()
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
-const expand = ref(false)
-const changeExpand = () => {
-    expand.value = !expand.value
-}
+
 let tableList = ref([])//表格数据
-let getMenuTree = async () => {
-    let res = await getMenuTreeApi()
+let getBoardTree = async () => {
+    let res = await getBoardTreeApi()
     if (res && res.code == 200) {
         tableList.value = res.data
     }
@@ -148,21 +143,19 @@ let getMenuTree = async () => {
 
 // 修改对象,添加对象
 let isRootMenu = ref(false)
-let sysMenu = ref<SysMenu>({//数据
-    mid: '',
-    menuName: '',
-    menuType: 1,
-    parentId: 0,
-    path: '',
+//修改对象
+let sysMenu = ref<Board>({//数据
+    boardId: '',
+    name: '',
     icon: '',
-    visible: 1,
-    sort: 0,
-    perms: ''
+    description: '',
+    sortOrder: 0
 })
+
 // 级联选择器选项
 let cascaderProps = ref<CascaderProps>({
-    value: "mid",
-    label: "menuName",
+    value: "boardId",
+    label: "name",
     children: "children",
     checkStrictly: true,  // 允许选择任意一级
     emitPath: false       // 仅返回最后一级的值
@@ -228,7 +221,7 @@ let commit = async () => {
             if (res && res.code == 200) {
                 //信息提示
                 ElMessage.success(res.msg)
-                getMenuTree()
+                getBoardTree()
                 //关闭弹框
                 dialog.visible = false;
                 //更新路由
@@ -251,7 +244,7 @@ let deleteBtn = (id: string) => {
             let res = await delMenuApi(id)
             if (res.code == 200) {
                 ElMessage.success(res.msg)
-                getMenuTree()
+                getBoardTree()
                 //更新路由
                 updatedMyRouterTree()
             }
@@ -260,21 +253,14 @@ let deleteBtn = (id: string) => {
         })
 }
 
-const changeVisible = async (row: SysMenu) => {
-    // 创建新对象避免修改原始行数据
-    const updatedMenu = { ...row };
-    // 直接切换 visible 值
-    updatedMenu.visible = updatedMenu.visible === 1 ? 0 : 1;
-    // 调用 API 更新
-    const res = await updateMenuApi(updatedMenu);
-    if (res?.code === 200) {
-        // 更新成功后，直接修改原行数据以触发界面刷新
-        row.visible = updatedMenu.visible;
-        ElMessage.success(res.msg);
-    } else {
-        ElMessage.error(res?.msg || '操作失败');
-    }
-};
+const changeBoardStatus = async (board: Board) => {
+    let res = await updateBoardApi(board)
+    if (res && res.code == 200) {
+        ElMessage.success("状态修改成功")
+        getBoardTree()
+    } else ElMessage.error("状态修改失败")
+
+}
 
 let box = ref(null)//用来挂载元素
 let tableHeight = ref(0)
@@ -283,65 +269,11 @@ onMounted(() => {
     tableHeight.value = window.innerHeight - 60 - 20 * 2 - 32 - 20 * 2
     console.log(tableHeight.value);
     //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding) - (el-footer) -(el-main的padding)
-    getMenuTree()
+    getBoardTree()
 })
 
 let rules = ref({
-    menuType: [
-        {
-            required: true,
-            message: '请选择菜单类型',
-            trigger: ['blur', 'change']
-        }
-    ],
-    parentId: [
-        {
-            validator: (rule: any, value: any, callback: any) => {
-                if (!isRootMenu.value && !value) {
-                    callback(new Error('请选择上级菜单'));
-                } else {
-                    callback();
-                }
-            },
-            trigger: ['blur', 'change']
-        }
-    ],
-    menuName: [
-        { required: true, message: '菜单名称不能为空', trigger: 'blur' },
-        { min: 2, max: 20, message: '名称长度在2到20个字符之间', trigger: 'blur' }
-    ],
-    perms: [
-        {
-            required: true, // 按钮类型必填sysMenu.value.menuType === '2'
-            message: '权限字段不能为空',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^[a-zA-Z0-9:]+$/,
-            message: '权限字段只能包含字母、数字和冒号',
-            trigger: 'blur'
-        }
-    ],
-    sort: [
-        {
-            required: sysMenu.value.menuType === 1, // 菜单类型必填
-            message: '排序序号不能为空',
-            trigger: 'blur'
-        }
-    ],
-    path: [
-        {
-            required: sysMenu.value.menuType === 1, // 菜单类型必填
-            message: '路由路径不能为空',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^\/\w+/,
-            message: '路由必须以斜杠开头且包含有效字符',
-            trigger: 'blur'
-        }
-    ],
-    icon: []
+
 })
 
 </script>

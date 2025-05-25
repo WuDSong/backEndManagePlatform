@@ -7,38 +7,43 @@
                     <el-card style="max-width: 100%;display: block;">
                         <h3 class="date">{{ formattedDate }}</h3>
                         <h4 class="time">{{ formattedTime }}</h4>
+                        
                     </el-card>
                     <el-card style="max-width: 100%;display: block;">
-                        <h3 class="date">{{ formattedDate }}</h3>
-                        <h4 class="time">{{ formattedTime }}</h4>
+                        <h3>总帖子数：{{ sysNum.post }}</h3>
+                        <h3>总评论数：{{ sysNum.comment }}</h3>
                     </el-card>
                 </div>
             </div>
             <el-card class="Panel">
                 <el-row :gutter="20">
                     <el-col :span="5">
-                        <div class="PanelItem" style="background-image: linear-gradient(to right,#ffb650,#ff577f);">
-                            <div>1</div>
-                            <div>待处理投诉</div>
-                        </div>
-                    </el-col>
-                    <el-col :span="5">
-                        <div class="PanelItem" style="background-image: linear-gradient(to right,#50e2ff,#36b0f1);">
-                            <div>15</div>
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#ffb650,#ff577f);"
+                            @click="router.push('/postList')">
+                            <div>{{ toDoNum.post }}</div>
                             <div>待审核帖子</div>
                         </div>
                     </el-col>
                     <el-col :span="5">
-                        <div class="PanelItem"
-                            style="background-image: linear-gradient(to right,rgb(121, 232, 211),rgb(0, 178, 166))">
-                            <div>2</div>
-                            <div>后台用户</div>
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#50e2ff,#36b0f1);"
+                            @click="router.push('/commentList')">
+                            <div>{{ toDoNum.comment }}</div>
+                            <div>待审核评论</div>
                         </div>
                     </el-col>
                     <el-col :span="5">
-                        <div class="PanelItem" style="background-image: linear-gradient(to right,#6abeff,#7b57ff);">
-                            <div>1</div>
-                            <div>小程序重置密码申请</div>
+                        <div class="PanelItem"
+                            style="background-image: linear-gradient(to right,rgb(121, 232, 211),rgb(0, 178, 166))"
+                            @click="router.push('/appfeedback')">
+                            <div>{{ toDoNum.app }}</div>
+                            <div>反馈与建议</div>
+                        </div>
+                    </el-col>
+                    <el-col :span="5">
+                        <div class="PanelItem" style="background-image: linear-gradient(to right,#6abeff,#7b57ff);"
+                            @click="router.push('/addboard')">
+                            <div>{{ toDoNum.board }}</div>
+                            <div>小程序版区申请</div>
                         </div>
                     </el-col>
                     <el-col :span="4">
@@ -57,6 +62,13 @@
 import * as echarts from 'echarts';
 import { onMounted, nextTick, ref, reactive, onUnmounted, computed } from "vue";
 import { getUserActiveOneMonthApi } from "@/api/log"
+import { getCountOfReportByTypeApi } from '@/api/report';
+import { getCountOfBoardPendingApi } from '@/api/board';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
+import { getCountOfNormalPostApi } from '@/api/post';
+import { getCountOfNormalCommentApi } from '@/api/comment';
+const router = useRouter();
 //窗口高度
 const mainHeight = ref(0);
 // 图表
@@ -132,10 +144,45 @@ const formattedDate = computed(() => {
     })
 })
 
+let sysNum = ref({
+    post: 0,
+    comment: 0,
+})
+
+let toDoNum = ref({
+    post: 0,
+    comment: 0,
+    app: 0,
+    board: 0
+})
+
+let getNums = async () => {
+    let res1 = await getCountOfReportByTypeApi()
+    let res2 = await getCountOfBoardPendingApi()
+    if (res1 && res1.code == 200) {
+        toDoNum.value.post = res1.data.postCount
+        toDoNum.value.comment = res1.data.commentCount
+        toDoNum.value.app = res1.data.appCount
+    } else ElMessage.error("获取待办失败")
+    if (res2 && res2.code == 200) {
+        toDoNum.value.board = res2.data
+    } else ElMessage.error("获取待办版区失败")
+
+    let res3 = await getCountOfNormalPostApi()
+    let res4 = await getCountOfNormalCommentApi()
+    if (res3 && res3.code == 200) {
+        sysNum.value.post = res3.data
+    } else ElMessage.error("获取post数量失败")
+    if (res4 && res4.code == 200) {
+        sysNum.value.comment = res4.data
+    } else ElMessage.error("获取comment数量失败")
+}
+
 //挂载
 onMounted(() => {
     nextTick(() => {
         getUserActiveOneMonth()
+        getNums()
         mainHeight.value = window.innerHeight - 60 - 20 * 2
         //表格高度 =  窗口高度 - (Layout el-heard) - (Layout el-main的padding)
         //每秒更新时间
@@ -188,7 +235,8 @@ onUnmounted(() => {
         font-size: large;
         transition: all 0.5s;
     }
-    .PanelItem:hover{
+
+    .PanelItem:hover {
         box-shadow: 0 5px 12px 0 rgba(0, 0, 0, 0.3)
     }
 }

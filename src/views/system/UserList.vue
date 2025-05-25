@@ -18,7 +18,7 @@
                 <el-table-column prop="username" label="用户名" align="center"></el-table-column>
                 <el-table-column prop="avatarUrl" label="头像">
                     <template #default="scope">
-                        <div style="color: #686868">{{ scope.row.avatarUrl }}</div>
+                        <el-image :src="scope.row.avatarUrl" :lazy="true" :preview-src-list="[scope.row.avatarUrl]" preview-teleported></el-image>
                     </template>
                 </el-table-column>
                 <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
@@ -72,8 +72,6 @@ import type { SySUser } from '@/api/user/UserModel';
 import SysDialog from '@/components/SysDialog.vue';
 import useDialog from '@/hooks/useDialog';
 import { ElMessage, ElMessageBox, ElNotification, type FormInstance } from 'element-plus';
-
-import { nextTick } from 'vue';
 import { Calendar, Search, Check, Close } from '@element-plus/icons-vue'
 import { delWxUserApi, getWxUserListApi, updatePasswordApi, updateWxUserApi } from '@/api/wxUser';
 import type { WxUser, WxUserParam } from '@/api/wxUser/wxUserModel';

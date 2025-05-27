@@ -188,7 +188,6 @@ let editBtn = (row: Board) => {
         url: row.icon
     }
     uploadParam.value.fileList.push(uploadedUserFile)
-
 }
 //点击提交
 let commit = async () => {

@@ -11,6 +11,7 @@
                     <el-button icon="Close" type="danger" plain @click="resetBtn">重置</el-button>
                     <el-button type="primary" icon="Plus" @click="addBtn">新增</el-button>
                 </el-form-item>
+                <el-form-item>tip:角色如果没有任何一个顶级菜单将无法登录（即无访问任何页面的权限）</el-form-item>
             </el-form>
             <!-- 表格                    边框    是否为斑马纹-->
             <el-table :data="tableList" border stripe :max-height="tableHeight">
@@ -26,7 +27,8 @@
                             :disabled="(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')">编辑</el-button>
                         <el-button type="success" icon="Edit" size="default" @click="assignBtn(scope.row)"
                             :disabled="(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')">分配菜单</el-button>
-                        <el-button type="danger" icon="Delete" size="default" :disabled="scope.row.userCount > 0||(scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')"
+                        <el-button type="danger" icon="Delete" size="default"
+                            :disabled="scope.row.userCount > 0 || (scope.row.rid == 1 && scope.row.roleKey == 'SUPER_ADMIN') || (scope.row.rid == 2 && scope.row.roleKey == 'COMMON_ADMIN')"
                             @click="deleteBtn(scope.row.rid)">删除</el-button>
                     </template>
                 </el-table-column>
@@ -136,8 +138,6 @@ let commit = async () => {
             ElMessage.error("验证未通过！重新填写信息！！！")
         }
     });
-
-
 }
 
 

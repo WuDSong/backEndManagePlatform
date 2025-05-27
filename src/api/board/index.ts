@@ -1,14 +1,19 @@
 import http from "@/utils/http"
 import type { Board, BoardParam } from "./BoardModel"
 
-//list 审核后的
+//分页获取审核通过后的
 export const getBoardListApi = (param: BoardParam) => {
-    return http.get("/api/board/listReviewed", param)
+    return http.get("/api/board/page", param)
 }
 
-//Tree 审核后的
+//获取审核后的树形数据
 export const getBoardTreeApi = () => {
     return http.get("/api/board/tree")
+}
+
+//搜索审核后树形数据
+export const getSerachBoardTreeApi = (param:string) => {
+    return http.get("/api/board/searchTree",{name:param})
 }
 
 //add
@@ -22,8 +27,8 @@ export const updateBoardApi = (param: Board) => {
 }
 
 //del
-export const delBoardApi = (param: string) => {
-    return http.delete("/api/board/" + param)
+export const delBoardApi = (id: string) => {
+    return http.delete("/api/board/" + id)
 }
 
 //isOccupied

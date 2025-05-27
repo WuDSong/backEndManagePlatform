@@ -94,7 +94,7 @@ const router = createRouter({
       children: [
         {
           path: "/board",
-          component: () => import("@/views/communityManage/Board.vue"),
+          component: () => import("@/views/communityManage/BoardManage.vue"),
           name: "board",
           meta: {
             title: "版区管理",

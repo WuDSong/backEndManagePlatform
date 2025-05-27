@@ -10,8 +10,8 @@
                         
                     </el-card>
                     <el-card style="max-width: 100%;display: block;">
-                        <h3>总帖子数：{{ sysNum.post }}</h3>
-                        <h3>总评论数：{{ sysNum.comment }}</h3>
+                        <h3>正常帖子总数：{{ sysNum.post }}</h3>
+                        <h3>正常评论总数：{{ sysNum.comment }}</h3>
                     </el-card>
                 </div>
             </div>

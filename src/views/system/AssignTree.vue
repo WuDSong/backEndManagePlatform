@@ -16,7 +16,7 @@
                     <!-- check-strictly:任何节点都可以单独选择 check-on-click-node:点击node进行选择 默认值是 false 
                      render-after-expand是否在第一次展开某个树节点后才渲染其子节点-->
                     <el-tree-select v-model="assignTreeData.checkedList" :data="assignTreeData.dataList"
-                        :render-after-expand="false" show-checkbox :check-strictly="false" :props="treeSelectProps"
+                        :render-after-expand="false" show-checkbox :check-strictly="true" :props="treeSelectProps"
                         style="width: 240px" multiple :check-on-click-node="true" node-key="mid" />
                 </el-form-item>
             </el-form>
@@ -32,21 +32,22 @@ import type { Role } from '@/api/role/RoleModel';
 import { nextTick, reactive, ref } from 'vue';
 import { userStore } from '@/stores/user';
 import { getRoleAssignMenuTree } from '@/api/menu';
-import { ElMessage } from 'element-plus';
+import { ElMessage,ElNotification } from 'element-plus';
 import { assignRoleMenu } from '@/api/role';
 let currentUser = userStore()
 
 let role = ref<Role>() //当前弹窗编辑的角色
 // 树形选择器的值
 let assignTreeData = reactive({
-    dataList: [],
-    checkedList: [],
-    defaultCheckedList: []
+    dataList: [],      //当前用户菜单树，用户只能修改角色中用户的权限
+    checkedList: [],   //当前为角色分配的菜单，mid，一开始和defaultCheckedList相等
+    defaultCheckedList: []//当前角色默认选择的菜单
 })
-
+// 选择器配置项
 let treeSelectProps = {
     label: 'menuName',
-    value: 'mid'
+    value: 'mid',
+    children: 'children'
 }
 
 // 使用 useDialog 控制弹窗状态
@@ -92,9 +93,9 @@ const emit = defineEmits(['refresh']);
 
 // 提交
 const { startLoading, stopLoading } = useLoading({
-  target: '.sys-dialog' // 限制遮罩范围
+    target: '.sys-dialog' // 限制遮罩范围
 })
-const loading =ref(false)
+const loading = ref(false)
 const commit = async () => {
     // 一、对数据处理同告知方法（插入、删除。。。）
     // 1.如果数据不发生变化可以不做请求。 比如assignTreeData.checkedList 由1，2，3 变成 3，2，1
@@ -122,11 +123,11 @@ const commit = async () => {
         menuIds: assignTreeData.checkedList // 全量菜单ID数组
     }
     try {
-        let res=await assignRoleMenu(params)
-        if(res&&res.code==200){
+        let res = await assignRoleMenu(params)
+        if (res && res.code == 200) {
             ElMessage.success("分配成功")
             onClose()
-        }else ElMessage.error("分配失败，"+res.msg)
+        } else ElMessage.error("分配失败，" + res.msg)
     } finally {
         loading.value = false;
         stopLoading()

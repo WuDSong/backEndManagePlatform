@@ -41,6 +41,7 @@ import { nextTick, onMounted, reactive, ref } from 'vue';
 import type { FormInstance } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { userStore } from '@/stores/user';
+import { ElMessage,ElNotification } from 'element-plus';
 //路由对象
 const router = useRouter()
 //解引用方式
@@ -81,6 +82,9 @@ const commit = () => {
                 store.rid = res.data.rid
                 //跳转首页
                 router.replace({ path: '/' })
+                if(store.menuRouterTree.length==0){
+                    ElNotification.error("当前用户无权限进入系统")
+                }
             }
         } else {
             console.log("不通过")

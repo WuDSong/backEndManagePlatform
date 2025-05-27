@@ -105,7 +105,6 @@ import type { Topic, TopicParam } from "@/api/topic/TopicModel"
 import UploadSingleImage from '@/components/UploadImage.vue'
 import type { uploadImageParameter } from '@/api/img/uploadImageModel';
 import { formatNumber } from "@/utils/number"
-import { icons } from '@element-plus/icons-vue/global';
 import { OBJAssignExisting } from '@/utils/ObjectCopy';
 const { dialog, onClose, onConfirm, onShow } = useDialog()//初始弹窗
 //搜索参数同时也是页面参数

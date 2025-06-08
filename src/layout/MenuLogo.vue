@@ -6,9 +6,10 @@
 </template>
 <script setup lang="ts">
 import MenuLogo from "@/assets/Rem.png"
+import MenuLogo1 from "@/assets/二次元.png"
 import { ref, watch, onMounted} from "vue";
 import { useCollapseStore } from '@/stores/collapse';
-const title = ref("ACGN论坛管理后台");
+const title = ref("ACG论坛管理后台");
 
 const show = ref(true);//是否展示title，当菜单栏要折叠时不展示，取值与useCollapseStore中的Collapse相反
 const store = useCollapseStore()
@@ -31,6 +32,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .logo {
     display: flex;
+    justify-content: space-between;
     width: 100%;
     height: 60px;
     line-height: 60px;
@@ -51,7 +53,7 @@ onMounted(() => {
         color: #000000;
         font-weight: 800;
         line-height: 60px;
-        font-size: 16px;
+        font-size: 20px;
         font-family: "微软雅黑";
     }
 }

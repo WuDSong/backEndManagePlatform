@@ -119,7 +119,7 @@ onMounted(() => {
     height: 100%;
     // background-color: #fff;
     // background-image: url("../../assets/胡桃.jpg");
-    background-image: url("@/assets/胡桃.jpg");
+    background-image: url("@/assets/初音.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

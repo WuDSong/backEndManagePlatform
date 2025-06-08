@@ -47,16 +47,20 @@
                     <h2>{{ breadcrumbs[breadcrumbs.length - 1].name }}</h2>
                     <el-text line-clamp="2" size="large">{{ breadcrumbs[breadcrumbs.length - 1].description }}</el-text>
                     <div>
-                        <el-tooltip :content="'版区状态: ' + breadcrumbs[breadcrumbs.length - 1].status" placement="top" loading>
+                        <el-tooltip :content="'版区状态: ' + breadcrumbs[breadcrumbs.length - 1].status" placement="top"
+                            loading>
                             <el-switch class="mt-2"
                                 style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
-                                :inactive-icon="Close" inline-prompt :active-icon="Check" v-model="breadcrumbs[breadcrumbs.length - 1].status"
-                                active-value="active" inactive-value="banned" @change="changeBoardStatus(breadcrumbs[breadcrumbs.length - 1])" />
+                                :inactive-icon="Close" inline-prompt :active-icon="Check"
+                                v-model="breadcrumbs[breadcrumbs.length - 1].status" active-value="active"
+                                inactive-value="banned"
+                                @change="changeBoardStatus(breadcrumbs[breadcrumbs.length - 1])" />
                         </el-tooltip>
                         <span>&nbsp;&nbsp;&nbsp;</span>
                         <el-button icon="Edit" size="small"
                             @click="editBtn(breadcrumbs[breadcrumbs.length - 1])"></el-button>
-                        <el-button icon="Delete" size="small" :disabled="breadcrumbs[breadcrumbs.length - 1].children?.length"
+                        <el-button icon="Delete" size="small"
+                            :disabled="breadcrumbs[breadcrumbs.length - 1].children?.length"
                             @click="delBoard(breadcrumbs[breadcrumbs.length - 1])"></el-button>
                     </div>
                 </div>
@@ -172,7 +176,7 @@ let board = ref<changeBoardParam>({ // 基本必传信息
     name: '',
     icon: '',
     description: '',
-    sortOrder:10
+    sortOrder: 10
 })
 
 let uploadParam = ref<uploadImageParameter>({ //上传图片的模式
@@ -245,8 +249,8 @@ let commit = async () => {
     });
 }
 // 直接删除版区
-const delBoard=async(board:Board)=>{
-    let res=await delBoardApi(board.boardId!)
+const delBoard = async (board: Board) => {
+    let res = await delBoardApi(board.boardId!)
     if (res && res.code == 200) {
         ElMessage.success("删除成功")
         getAllBoardTree()
@@ -269,9 +273,25 @@ let isOccupied = async (rule: any, value: any, callback: any) => {
         callback()
         return
     }
-    //如果是第一次(mode==0)添加则需要直接验证
-    let res = await isOccupiedBoardApi(value)
-    if (res && res.code == 200 && res.data)
+    // 获取当前父版区ID
+    let parentId: string | null = null;
+
+    if (mode.value === 0) {
+        // 新增模式：使用当前面包屑最后一项的boardId
+        const currentBreadcrumb = breadcrumbs.value[breadcrumbs.value.length - 1];
+        parentId = currentBreadcrumb.boardId ? currentBreadcrumb.boardId : null;
+    } else {
+        // 编辑模式：使用原版区的父ID
+        parentId = board.value.parentId ? board.value.parentId : null;
+    }
+    // 调用API检查名称是否被占用
+    console.log(value);
+    console.log(parentId);
+    const res = await isOccupiedBoardApi({
+        parentId: parentId,
+        boardName: value
+    });
+    if (res && res.code == 200&&res.data)
         callback(new Error("版区名已被占用啦~"))
     callback()
 }

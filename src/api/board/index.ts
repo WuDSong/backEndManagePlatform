@@ -12,8 +12,8 @@ export const getBoardTreeApi = () => {
 }
 
 //搜索审核后树形数据
-export const getSerachBoardTreeApi = (param:string) => {
-    return http.get("/api/board/searchTree",{name:param})
+export const getSerachBoardTreeApi = (param: string) => {
+    return http.get("/api/board/searchTree", { name: param })
 }
 
 //add
@@ -31,9 +31,12 @@ export const delBoardApi = (id: string) => {
     return http.delete("/api/board/" + id)
 }
 
-//isOccupied
-export const isOccupiedBoardApi = (param: string) => {
-    return http.get("/api/board/isOccupied/" + param)
+// 是否重复（同一父板块下）
+export const isOccupiedBoardApi = (params: {
+    parentId: string | null,
+    boardName: string
+}) => {
+    return http.get("/api/board/isOccupied", params);
 }
 
 // 获取待审核的
